@@ -261,6 +261,50 @@ td code{font-size:13px}
 footer{margin-top:110px;padding-top:24px;border-top:1px solid var(--strek);color:var(--dempet);font-size:14px}
 footer a{color:var(--messing)}
 
+/* ---------- Flytkart over slottet ---------- */
+.flytkart{margin:18px 0 8px}
+.flytkart .forklaring{
+  margin:0 0 16px;padding:0;list-style:none;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px 24px;
+}
+.flytkart .forklaring li{display:flex;align-items:center;gap:12px;font-size:14.5px;line-height:1.4;color:var(--dempet)}
+.flytkart .forklaring svg{flex:0 0 52px;width:52px;height:26px}
+.flytkart .forklaring b{color:var(--tekst);font-weight:400}
+.flytkart .forklaring code{white-space:nowrap}
+.flytkart figure{margin:0 0 22px}
+.flytkart .lerret{overflow-x:auto;background:#141227;border:1px solid var(--strek);border-radius:3px;padding:16px}
+.flytkart .lerret svg{display:block;width:100%;height:auto}
+.flytkart .lerret.runde svg{min-width:640px}
+.flytkart .lerret.steder svg{min-width:900px}
+.flytkart figcaption{color:var(--dempet);font-size:15px;margin-top:10px;max-width:66ch}
+.flytkart .rull{display:none;font-family:var(--mono);font-size:12px;color:var(--dempet);margin-top:6px}
+@media (max-width:940px){.flytkart .rull{display:block}}
+.flytkart svg text{font-family:var(--serif)}
+.flytkart .zone{fill:var(--panel);stroke:var(--strek);stroke-width:1.2}
+.flytkart .zhead{font-family:var(--mono);font-size:11.5px;fill:var(--messing)}
+.flytkart .zname{font-size:16px;fill:var(--tekst)}
+.flytkart .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;fill:var(--dempet)}
+.flytkart .q{fill:var(--natt);stroke:var(--messing-dyp);stroke-width:1.2}
+.flytkart .qt{font-size:13px;font-style:italic;fill:var(--tekst);text-anchor:middle}
+.flytkart .hex{fill:var(--panel2);stroke:var(--dempet);stroke-width:1}
+.flytkart .hext{font-family:var(--mono);font-size:11.5px;fill:var(--tekst);text-anchor:middle}
+.flytkart .box{fill:var(--natt);stroke:var(--strek);stroke-width:1.2}
+.flytkart .box.god{stroke:var(--mose)}
+.flytkart .box.vond{stroke:var(--rust)}
+.flytkart .boxt{font-size:12.5px;fill:var(--tekst);text-anchor:middle}
+.flytkart .kamp{fill:#23203F;stroke:#7C769C;stroke-width:1;stroke-dasharray:5 4}
+.flytkart .pill.start,.flytkart .pill.slutt{fill:var(--natt);stroke:var(--messing);stroke-width:1.2}
+.flytkart .pill.seier{fill:var(--mose)}
+.flytkart .pill.tap{fill:var(--rust)}
+.flytkart .pillt{font-family:var(--mono);font-size:12.5px;text-anchor:middle;letter-spacing:.03em}
+.flytkart .pillt.start,.flytkart .pillt.slutt{fill:var(--tekst)}
+.flytkart .pillt.seier,.flytkart .pillt.tap{fill:var(--natt);font-weight:700}
+.flytkart .flow{fill:none;stroke:#8A83B3;stroke-width:1.3;stroke-linejoin:round}
+.flytkart .move{fill:none;stroke:var(--messing);stroke-width:1.8;stroke-linejoin:round}
+.flytkart .valg{font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;fill:var(--messing)}
+.flytkart .yn,.flytkart .sub{font-family:var(--mono);font-size:10.5px;fill:var(--dempet)}
+.flytkart .blir{font-family:var(--mono);font-size:11px;fill:var(--dempet)}
+
 @media (max-width:620px){
   body{font-size:16px}
   .wrap{padding:0 16px 80px}
@@ -712,8 +756,210 @@ footer a{color:var(--messing)}
     <p>Det tar fem minutter og sparer deg for en time. Tegn på papir hvilke steder som finnes,
     og hvilke valg som fører hvor.</p>
 
-    <div class="kodeboks">
-      <pre data-src="src-kart"></pre>
+    <p>Slik ser kartet over Det glemte slottet ut, tegnet som flytskjema. Kartet ditt på papir
+    trenger ikke være like detaljert, men det skal vise det samme: stedene, valgene, og hvor hvert valg fører.</p>
+
+    <div class="flytkart">
+      <ul class="forklaring" aria-label="Tegnforklaring">
+        <li><svg viewBox="0 0 58 28" aria-hidden="true"><rect x="2" y="3" width="54" height="22" rx="4" fill="#272348" stroke="#453D74"/></svg>
+          <span><b>Et sted,</b> med sin egen <code>if</code>-blokk</span></li>
+        <li><svg viewBox="0 0 58 28" aria-hidden="true"><rect x="2" y="4" width="54" height="20" rx="10" fill="#1E1B33" stroke="#8C6620"/></svg>
+          <span><b>Spørsmål</b> stilt med <code>spor()</code></span></li>
+        <li><svg viewBox="0 0 58 28" aria-hidden="true"><line x1="2" y1="19" x2="48" y2="19" stroke="#E8B04B" stroke-width="1.8"/><path d="M47,15 L56,19 L47,23 z" fill="#E8B04B"/><text x="2" y="12" font-family="Consolas,monospace" font-size="9" fill="#E8B04B">DØREN</text></svg>
+          <span><b>Flytter</b> til et nytt sted. Ordet er det spilleren skriver.</span></li>
+        <li><svg viewBox="0 0 58 28" aria-hidden="true"><polygon points="2,14 10,4 48,4 56,14 48,24 10,24" fill="#2F2A56" stroke="#A8A0C8"/></svg>
+          <span><b>Sjekk i koden,</b> med <code>if</code> eller <code>while</code></span></li>
+        <li><svg viewBox="0 0 58 28" aria-hidden="true"><rect x="2" y="4" width="25" height="20" rx="2" fill="#1E1B33" stroke="#86C99A"/><rect x="31" y="4" width="25" height="20" rx="2" fill="#1E1B33" stroke="#E0745A"/></svg>
+          <span><b>Det som skjer.</b> Grønn gir noe, rød koster liv.</span></li>
+        <li><svg viewBox="0 0 58 28" aria-hidden="true"><text x="29" y="19" text-anchor="middle" font-family="Consolas,monospace" font-size="15" fill="#A8A0C8">&#8634;</text></svg>
+          <span><b>Blir på stedet</b> neste runde, også når spilleren skriver noe som ikke er et av valgene.</span></li>
+      </ul>
+
+      <figure>
+        <div class="lerret steder">
+          <svg viewBox="0 0 1280 1060" role="img" aria-label="Kart over stedene i Det glemte slottet. Utenfor slottet går SLOTTET til hallen og SKOGEN til skogen. Hallen går til rommet, trappen eller ut. I rommet kan spilleren åpne kisten og få gullnøkkelen, eller gå tilbake. I skogen kan spilleren lete og få helsedrikk eller bli bitt av en rotte, eller gå tilbake. På trappen kjempes det mot trollet hvis det lever. Er trollet beseiret og spilleren har nøkkelen, vinner spilleren. Ellers går spilleren tilbake til hallen.">
+<defs>
+<marker id="fk2-m" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8A83B3"/></marker>
+<marker id="fk2-b" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#E8B04B"/></marker>
+</defs>
+<rect class="zone" x="410" y="90" width="320" height="110" rx="6"/>
+<text class="zhead" x="426" y="110">sted == &quot;ute&quot;</text>
+<text class="zname" x="426" y="128">Utenfor slottet</text>
+<rect class="zone" x="410" y="260" width="320" height="130" rx="6"/>
+<text class="zhead" x="426" y="280">sted == &quot;hallen&quot;</text>
+<text class="zname" x="426" y="298">Inngangshallen</text>
+<rect class="zone" x="410" y="440" width="320" height="360" rx="6"/>
+<text class="zhead" x="426" y="460">sted == &quot;rommet&quot;</text>
+<text class="zname" x="426" y="478">Rommet bak døren</text>
+<text class="tag" x="716" y="786" text-anchor="end">OPPGAVE 2</text>
+<rect class="zone" x="20" y="260" width="320" height="355" rx="6"/>
+<text class="zhead" x="36" y="280">sted == &quot;skogen&quot;</text>
+<text class="zname" x="36" y="298">Skogen</text>
+<text class="tag" x="326" y="601" text-anchor="end">OPPGAVE 5 · 6</text>
+<rect class="zone" x="800" y="260" width="460" height="750" rx="6"/>
+<text class="zhead" x="816" y="280">sted == &quot;trappen&quot;</text>
+<text class="zname" x="816" y="298">Trappen</text>
+<text class="tag" x="816" y="996" text-anchor="start">OPPGAVE 3 · 4</text>
+<rect class="pill start" x="480" y="22" width="180" height="34" rx="17.0"/>
+<text class="pillt start" x="570.0" y="43.5">Start: sted = &quot;ute&quot;</text>
+<polyline class="move" points="570,56 570,90" marker-end="url(#fk2-b)"/>
+<rect class="q" x="430" y="144" width="280" height="30" rx="15"/>
+<text class="qt" x="570.0" y="163.5">Går du inn i SLOTTET eller inn i SKOGEN?</text>
+<rect class="q" x="420" y="312" width="300" height="30" rx="15"/>
+<text class="qt" x="570.0" y="331.5">Velger du DØREN, TRAPPEN, eller går du UT?</text>
+<rect class="q" x="450" y="494" width="240" height="46" rx="15"/>
+<text class="qt" x="570.0" y="513.5">Vil du ÅPNE kisten, eller</text>
+<text class="qt" x="570.0" y="529.5">gå TILBAKE til hallen?</text>
+<rect class="q" x="60" y="312" width="240" height="46" rx="15"/>
+<text class="qt" x="180.0" y="331.5">Vil du LETE i buskene, eller</text>
+<text class="qt" x="180.0" y="347.5">gå TILBAKE til slottet?</text>
+<polyline class="move" points="540,174 540,260" marker-end="url(#fk2-b)"/>
+<text class="valg" x="532" y="226" text-anchor="end">SLOTTET</text>
+<polyline class="move" points="660,312 660,200" marker-end="url(#fk2-b)"/>
+<text class="valg" x="668" y="226" text-anchor="start">UT</text>
+<polyline class="move" points="430,159 150,159 150,260" marker-end="url(#fk2-b)"/>
+<text class="valg" x="290" y="151" text-anchor="middle">SKOGEN</text>
+<polyline class="move" points="300,335 322,335 322,188 410,188" marker-end="url(#fk2-b)"/>
+<text class="valg" x="368" y="206" text-anchor="middle">TILBAKE</text>
+<polyline class="move" points="520,342 520,440" marker-end="url(#fk2-b)"/>
+<text class="valg" x="528" y="420" text-anchor="start">DØREN</text>
+<polyline class="move" points="690,517 712,517 712,390" marker-end="url(#fk2-b)"/>
+<text class="valg" x="704" y="420" text-anchor="end">TILBAKE</text>
+<polyline class="move" points="720,327 800,327" marker-end="url(#fk2-b)"/>
+<text class="valg" x="760" y="319" text-anchor="middle">TRAPPEN</text>
+<polyline class="move" points="1185,987 1185,1040 765,1040 765,372 730,372" marker-end="url(#fk2-b)"/>
+<text class="yn" x="786" y="700" text-anchor="middle" transform="rotate(-90 786 700)">alltid tilbake til hallen</text>
+<polyline class="flow" points="180,358 180,385" marker-end="url(#fk2-m)"/>
+<text class="valg" x="188" y="377" text-anchor="start">LETE</text>
+<polygon class="hex" points="101.0,402 113.0,385.0 247.0,385.0 259.0,402 247.0,419.0 113.0,419.0"/>
+<text class="hext" x="180" y="406">terning(1, 2)</text>
+<polyline class="flow" points="101,402 101,450" marker-end="url(#fk2-m)"/>
+<text class="yn" x="93" y="434" text-anchor="end">1</text>
+<polyline class="flow" points="259,402 259,450" marker-end="url(#fk2-m)"/>
+<text class="yn" x="267" y="434" text-anchor="start">2</text>
+<rect class="box god" x="30" y="450" width="142" height="46" rx="3"/>
+<text class="boxt" x="101.0" y="469.5">Helsedrikk i sekken</text>
+<text class="boxt" x="101.0" y="484.5">hvis du ikke har en</text>
+<rect class="box vond" x="188" y="450" width="142" height="46" rx="3"/>
+<text class="boxt" x="259.0" y="469.5">En rotte biter:</text>
+<text class="boxt" x="259.0" y="484.5">du mister 1–2 liv</text>
+<text class="blir" x="180" y="528" text-anchor="middle">↺ blir i skogen</text>
+<polyline class="flow" points="570,540 570,575" marker-end="url(#fk2-m)"/>
+<text class="valg" x="578" y="562" text-anchor="start">ÅPNE</text>
+<polygon class="hex" points="480.0,592 492.0,575.0 648.0,575.0 660.0,592 648.0,609.0 492.0,609.0"/>
+<text class="hext" x="570" y="596">&quot;gullnøkkel&quot; in inventar?</text>
+<polyline class="flow" points="480,592 480,640" marker-end="url(#fk2-m)"/>
+<text class="yn" x="472" y="624" text-anchor="end">ja</text>
+<polyline class="flow" points="660,592 660,640" marker-end="url(#fk2-m)"/>
+<text class="yn" x="668" y="624" text-anchor="start">nei</text>
+<rect class="box " x="418" y="640" width="124" height="46" rx="3"/>
+<text class="boxt" x="480.0" y="659.5">Kisten er tom</text>
+<text class="boxt" x="480.0" y="674.5">(du har nøkkelen)</text>
+<rect class="box god" x="598" y="640" width="124" height="46" rx="3"/>
+<text class="boxt" x="660.0" y="659.5">Gullnøkkelen</text>
+<text class="boxt" x="660.0" y="674.5">legges i sekken</text>
+<text class="blir" x="570" y="720" text-anchor="middle">↺ blir i rommet</text>
+<polygon class="hex" points="895.0,340 907.0,323.0 1043.0,323.0 1055.0,340 1043.0,357.0 907.0,357.0"/>
+<text class="hext" x="975" y="344">troll_liv &gt; 0?</text>
+<polyline class="flow" points="975,357 975,418" marker-end="url(#fk2-m)"/>
+<text class="yn" x="983" y="377" text-anchor="start">ja</text>
+<polyline class="flow" points="1055,340 1195,340 1195,385" marker-end="url(#fk2-m)"/>
+<text class="yn" x="1125" y="332" text-anchor="middle">nei</text>
+<rect class="box " x="1145" y="385" width="100" height="60" rx="3"/>
+<text class="boxt" x="1195.0" y="404.0">Trollet</text>
+<text class="boxt" x="1195.0" y="419.0">ligger</text>
+<text class="boxt" x="1195.0" y="434.0">fortsatt der</text>
+<rect class="kamp" x="820" y="385" width="310" height="350" rx="6"/>
+<text class="sub" x="834" y="403" text-anchor="start">kampen · while-løkke</text>
+<polygon class="hex" points="850.0,435 862.0,418.0 1088.0,418.0 1100.0,435 1088.0,452.0 862.0,452.0"/>
+<text class="hext" x="975" y="439">troll_liv &gt; 0 and liv &gt; 0?</text>
+<polyline class="flow" points="975,452 975,475" marker-end="url(#fk2-m)"/>
+<text class="yn" x="983" y="467" text-anchor="start">ja</text>
+<rect class="q" x="885" y="475" width="180" height="30" rx="15"/>
+<text class="qt" x="975.0" y="494.5">ANGRIP eller FLYKT?</text>
+<polyline class="flow" points="975,505 975,540" marker-end="url(#fk2-m)"/>
+<text class="valg" x="983" y="527" text-anchor="start">ANGRIP</text>
+<rect class="box " x="870" y="540" width="210" height="32" rx="3"/>
+<text class="boxt" x="975.0" y="560.0">Trollet mister 1–4 liv</text>
+<polyline class="flow" points="975,572 975,595" marker-end="url(#fk2-m)"/>
+<polygon class="hex" points="895.0,612 907.0,595.0 1043.0,595.0 1055.0,612 1043.0,629.0 907.0,629.0"/>
+<text class="hext" x="975" y="616">troll_liv &gt; 0?</text>
+<polyline class="flow" points="975,629 975,655" marker-end="url(#fk2-m)"/>
+<text class="yn" x="983" y="646" text-anchor="start">ja</text>
+<rect class="box vond" x="870" y="655" width="210" height="32" rx="3"/>
+<text class="boxt" x="975.0" y="675.0">Trollet slår: du mister 2–4 liv</text>
+<polyline class="flow" points="870,671 838,671 838,435 850,435" marker-end="url(#fk2-m)"/>
+<text class="yn" x="857" y="612" text-anchor="middle" transform="rotate(-90 857 612)">ny runde</text>
+<polyline class="flow" points="885,490 838,490"/>
+<text class="yn" x="861" y="483" text-anchor="middle">annet</text>
+<polyline class="flow" points="1100,435 1115,435"/>
+<text class="yn" x="1120" y="428" text-anchor="start">nei</text>
+<polyline class="flow" points="1065,490 1115,490"/>
+<text class="valg" x="1090" y="483" text-anchor="middle">FLYKT</text>
+<polyline class="flow" points="1055,612 1115,612"/>
+<text class="yn" x="1085" y="605" text-anchor="middle">nei</text>
+<polyline class="flow" points="1115,435 1115,760"/>
+<polyline class="flow" points="1195,445 1195,760 975,760 975,780" marker-end="url(#fk2-m)"/>
+<polygon class="hex" points="895.0,797 907.0,780.0 1043.0,780.0 1055.0,797 1043.0,814.0 907.0,814.0"/>
+<text class="hext" x="975" y="801">troll_liv &lt;= 0?</text>
+<polyline class="flow" points="975,814 975,845" marker-end="url(#fk2-m)"/>
+<text class="yn" x="983" y="834" text-anchor="start">ja</text>
+<polygon class="hex" points="850.0,862 862.0,845.0 1088.0,845.0 1100.0,862 1088.0,879.0 862.0,879.0"/>
+<text class="hext" x="975" y="866">&quot;gullnøkkel&quot; in inventar?</text>
+<polyline class="flow" points="1055,797 1235,797 1235,955" marker-end="url(#fk2-m)"/>
+<text class="yn" x="1145" y="789" text-anchor="middle">nei</text>
+<polyline class="flow" points="1100,862 1235,862"/>
+<text class="yn" x="1167" y="854" text-anchor="middle">nei · døren er låst</text>
+<polyline class="flow" points="975,879 975,910" marker-end="url(#fk2-m)"/>
+<text class="yn" x="983" y="898" text-anchor="start">ja</text>
+<rect class="pill seier" x="900" y="910" width="150" height="36" rx="18.0"/>
+<text class="pillt seier" x="975.0" y="932.5">DU VANT</text>
+<text class="sub" x="975" y="966" text-anchor="middle">spiller = False</text>
+<rect class="box" x="1120" y="955" width="130" height="32" rx="3"/>
+<text class="hext" x="1185.0" y="975.0">sted = &quot;hallen&quot;</text>
+          </svg>
+        </div>
+        <p class="rull">Rull sidelengs for å se hele kartet &#8594;</p>
+        <figcaption>Alle stedene i slottet. I rommet og skogen blir spilleren værende til den velger
+        TILBAKE. Fra trappen havner spilleren alltid i hallen igjen, med mindre spillet er vunnet.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="lerret runde">
+          <svg viewBox="0 0 1000 192" role="img" aria-label="Hovedløkken: så lenge spiller er True vises status, koden for stedet kjører, og deretter sjekkes om liv er 0 eller mindre. Da blir det GAME OVER, ellers starter en ny runde.">
+<defs>
+<marker id="fk1-m" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8A83B3"/></marker>
+<marker id="fk1-b" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#E8B04B"/></marker>
+</defs>
+<polygon class="hex" points="30.0,84 42.0,66.0 178.0,66.0 190.0,84 178.0,102.0 42.0,102.0"/>
+<text class="hext" x="110" y="88">while spiller</text>
+<polyline class="flow" points="190,84 250,84" marker-end="url(#fk1-m)"/>
+<text class="yn" x="220" y="76" text-anchor="middle">ja</text>
+<rect class="box" x="250" y="66" width="160" height="36" rx="3"/>
+<text class="hext" x="330.0" y="88.0">vis_status()</text>
+<text class="sub" x="330" y="122" text-anchor="middle">liv og sekk</text>
+<polyline class="flow" points="410,84 470,84" marker-end="url(#fk1-m)"/>
+<rect class="box " x="470" y="66" width="220" height="36" rx="3"/>
+<text class="boxt" x="580.0" y="88.0">Koden for stedet kjører</text>
+<text class="sub" x="580" y="122" text-anchor="middle">spør, flytter eller blir</text>
+<polyline class="flow" points="690,84 750,84" marker-end="url(#fk1-m)"/>
+<polygon class="hex" points="750.0,84 762.0,66.0 908.0,66.0 920.0,84 908.0,102.0 762.0,102.0"/>
+<text class="hext" x="835" y="88">liv &lt;= 0?</text>
+<polyline class="flow" points="835,102 835,144" marker-end="url(#fk1-m)"/>
+<text class="yn" x="843" y="128" text-anchor="start">ja</text>
+<rect class="pill tap" x="765" y="144" width="140" height="34" rx="17.0"/>
+<text class="pillt tap" x="835.0" y="165.5">GAME OVER</text>
+<polyline class="flow" points="835,66 835,30 110,30 110,66" marker-end="url(#fk1-m)"/>
+<text class="yn" x="472" y="22" text-anchor="middle">nei · neste runde</text>
+<polyline class="flow" points="110,102 110,144" marker-end="url(#fk1-m)"/>
+<text class="yn" x="118" y="128" text-anchor="start">nei</text>
+<rect class="pill slutt" x="40" y="144" width="140" height="34" rx="17.0"/>
+<text class="pillt slutt" x="110.0" y="165.5">Spillet er slutt</text>
+          </svg>
+        </div>
+        <figcaption>Én runde i hovedløkken. Koden for stedet spilleren står på kjører, og til slutt
+        sjekkes liv. Både seier og GAME OVER setter <code>spiller = False</code>, og da stopper løkken.</figcaption>
+      </figure>
     </div>
 
     <p>Svar på disse fire før du begynner:</p>
@@ -1151,27 +1397,6 @@ if liv <= 0:
     print()
     print("GAME OVER")
     spiller = False
-</script>
-
-<script type="text/plain" id="src-kart">
-Kartet over slottet ser omtrent slik ut. Tegn ditt eget på samme måte.
-
-
-                        START
-                          |
-                    Hvor går du?
-                     /          \
-                 SKOGEN        SLOTTET
-                   |               |
-              Hva skjer?     Dør eller trapp?
-               /     \        /          \
-          drikk      ulv   kiste        troll
-                                          |
-                                       låst dør
-                                       /       \
-                              har nøkkel       har ikke
-                                  |
-                                SEIER
 </script>
 
 <script type="text/plain" id="src-start">
