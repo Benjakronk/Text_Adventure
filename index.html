@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teksteventyr</title>
+<style>
+:root{
+  --natt:#1E1B33;
+  --panel:#272348;
+  --panel2:#2F2A56;
+  --strek:#453D74;
+  --tekst:#EDE6D8;
+  --dempet:#A8A0C8;
+  --messing:#E8B04B;
+  --messing-dyp:#8C6620;
+  --mose:#86C99A;
+  --rust:#E0745A;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+  --mono:Consolas,"Cascadia Mono","DejaVu Sans Mono",monospace;
+}
+*{box-sizing:border-box}
+/* Rullefeltet skal alltid ha plass, ellers hopper hele siden
+   sidevegs når en fane er lengre eller kortere enn vinduet. */
+html{scroll-behavior:smooth;overflow-y:scroll}
+@supports (scrollbar-gutter:stable){
+  html{overflow-y:auto;scrollbar-gutter:stable}
+}
+body{
+  margin:0;
+  background:var(--natt);
+  color:var(--tekst);
+  font-family:var(--serif);
+  font-size:17px;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1020px;margin:0 auto;padding:0 20px 120px}
+
+/* ---------- Navigasjonsbar ---------- */
+.navbar{
+  position:sticky;top:0;z-index:10;
+  background:var(--natt);
+  border-bottom:1px solid var(--strek);
+}
+.navinner{
+  max-width:1020px;margin:0 auto;padding:0 20px;
+  display:flex;align-items:stretch;
+}
+.merkenavn{
+  display:flex;align-items:center;
+  flex:0 0 auto;font-weight:400;
+  margin:0;padding-right:20px;margin-right:20px;
+  border-right:1px solid var(--strek);
+  font-size:19px;letter-spacing:-.01em;white-space:nowrap;
+}
+
+/* ---------- Faner ---------- */
+.faner{
+  flex:1 1 auto;min-width:0;
+  display:flex;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.faner::-webkit-scrollbar{display:none}
+/* Antyder at det finnes flere faner til høyre på smale skjermer */
+.faner.mer{
+  -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 40px),transparent);
+          mask-image:linear-gradient(90deg,#000 calc(100% - 40px),transparent);
+}
+.fane{
+  flex:0 0 auto;
+  display:flex;align-items:baseline;gap:9px;
+  margin:0 0 -1px;padding:15px 18px 13px;
+  background:none;border:none;border-bottom:2px solid transparent;
+  font-family:var(--serif);font-size:17px;color:var(--dempet);
+  white-space:nowrap;cursor:pointer;
+}
+.fane .tall{font-family:var(--mono);font-size:12px;color:var(--strek)}
+.fane:hover{color:var(--tekst)}
+.fane[aria-selected="true"]{color:var(--tekst);border-bottom-color:var(--messing)}
+.fane[aria-selected="true"] .tall{color:var(--messing)}
+.fane:focus-visible{outline:2px solid var(--messing);outline-offset:-3px}
+.fane.laast{color:#7C769C}
+.fane.ferdig .tall{color:var(--mose)}
+.hengelaas{display:none;align-self:center;margin-left:-2px}
+.fane.laast .hengelaas{display:block}
+
+/* ---------- Seksjoner ---------- */
+section.del{margin:44px 0 0}
+[hidden]{display:none!important}
+.seksjonstopp{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+.seksjonstopp .nr{font-family:var(--mono);color:var(--messing);font-size:14px}
+h2.stor{font-size:clamp(28px,4.4vw,40px);font-weight:400;margin:0;letter-spacing:-.01em}
+.leder{color:var(--dempet);max-width:60ch;margin:10px 0 28px}
+.leder + .leder{margin-top:-16px}
+
+.panel{
+  background:var(--panel);
+  border:1px solid var(--strek);
+  border-radius:4px;
+  padding:28px 30px;
+}
+.panel + .panel{margin-top:20px}
+
+/* ---------- Laast ---------- */
+.laas{
+  border:1px dashed var(--strek);
+  border-radius:4px;
+  padding:44px 30px;
+  text-align:center;
+  background:rgba(39,35,72,.45);
+}
+.laas svg{margin-bottom:14px}
+.laas p{color:var(--dempet);margin:0 auto;max-width:46ch}
+.laas strong{color:var(--tekst);font-weight:400}
+.skjult{display:none!important}
+.apner{animation:opp .8s ease-out}
+@keyframes opp{
+  0%{opacity:0;transform:translateY(12px)}
+  100%{opacity:1;transform:none}
+}
+@keyframes vri{
+  0%{transform:rotate(0)}
+  60%{transform:rotate(-14deg)}
+  100%{transform:rotate(0)}
+}
+
+/* ---------- Spillet ---------- */
+#spillpanel{
+  background:#141227;
+  border:1px solid var(--strek);
+  border-radius:4px;
+  overflow:hidden;
+  font-family:var(--mono);
+}
+.skjermtopp{
+  display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  padding:12px 20px;background:#0F0E1E;border-bottom:1px solid var(--strek);
+  font-size:13px;color:var(--dempet);letter-spacing:.02em;
+}
+.skjermtopp b{color:var(--messing);font-weight:400}
+.maaler{display:flex;gap:20px}
+.maaler span{color:var(--tekst)}
+#historie{
+  padding:26px 24px;min-height:230px;white-space:pre-line;
+  font-size:15.5px;line-height:1.75;color:#D9D3E8;
+}
+#valg{padding:0 24px 24px;display:grid;gap:9px}
+#valg button{
+  font-family:var(--mono);font-size:15px;text-align:left;
+  padding:12px 16px;color:var(--tekst);
+  background:#1D1A38;border:1px solid var(--strek);border-radius:3px;
+  cursor:pointer;transition:background .12s,border-color .12s;
+}
+#valg button:hover{background:#282350;border-color:var(--messing)}
+#valg button:focus-visible{outline:2px solid var(--messing);outline-offset:2px}
+
+/* ---------- Oppgaveliste ---------- */
+ol.oppgaver{list-style:none;margin:0;padding:0;counter-reset:o}
+ol.oppgaver > li{
+  counter-increment:o;
+  border-top:1px solid var(--strek);
+  padding:22px 0;
+}
+ol.oppgaver > li:last-child{border-bottom:1px solid var(--strek)}
+.oppg{display:flex;gap:18px;align-items:flex-start}
+.oppg .krysse{flex:0 0 auto;padding-top:3px}
+.oppg .innhold{flex:1 1 auto;min-width:0}
+.oppg h3{margin:0 0 4px;font-size:19px;font-weight:400;display:flex;gap:10px;flex-wrap:wrap;align-items:baseline}
+.oppg h3 .num{font-family:var(--mono);color:var(--messing);font-size:14px}
+.oppg p{margin:0 0 10px;color:var(--dempet)}
+.merke{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;
+  color:var(--messing);border:1px solid var(--messing-dyp);
+  padding:2px 8px;border-radius:2px;white-space:nowrap;
+}
+li.gjort .oppg h3,li.gjort .oppg h3 .num{color:var(--mose)}
+
+input[type=checkbox]{
+  appearance:none;-webkit-appearance:none;width:24px;height:24px;margin:0;
+  border:1px solid var(--strek);border-radius:3px;background:var(--natt);
+  cursor:pointer;display:grid;place-items:center;transition:border-color .12s;
+}
+input[type=checkbox]:hover{border-color:var(--messing)}
+input[type=checkbox]:focus-visible{outline:2px solid var(--messing);outline-offset:2px}
+input[type=checkbox]:checked{border-color:var(--mose);background:rgba(134,201,154,.12)}
+input[type=checkbox]:checked::after{
+  content:"";width:11px;height:6px;border-left:2px solid var(--mose);border-bottom:2px solid var(--mose);
+  transform:rotate(-45deg) translate(1px,-2px);
+}
+
+/* ---------- Detaljer / hint ---------- */
+details{margin:10px 0 0;border-left:2px solid var(--strek);padding-left:14px}
+details summary{
+  cursor:pointer;color:var(--messing);font-family:var(--mono);font-size:13.5px;
+  list-style:none;padding:2px 0;
+}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"+ "}
+details[open] summary::before{content:"\2013 "}
+details summary:focus-visible{outline:2px solid var(--messing);outline-offset:2px}
+details > *:not(summary){color:var(--dempet)}
+
+/* ---------- Kode ---------- */
+.kodeboks{position:relative;margin:14px 0}
+pre{
+  margin:0;background:#141227;border:1px solid var(--strek);border-radius:3px;
+  padding:18px 20px;overflow-x:auto;
+  font-family:var(--mono);font-size:14px;line-height:1.6;color:#D9D3E8;
+  white-space:pre;
+}
+code{font-family:var(--mono);font-size:.9em;background:#141227;border:1px solid var(--strek);padding:1px 6px;border-radius:3px;color:var(--messing)}
+.kopier{
+  position:absolute;top:10px;right:10px;
+  font-family:var(--mono);font-size:12px;color:var(--dempet);
+  background:#1D1A38;border:1px solid var(--strek);border-radius:3px;
+  padding:5px 10px;cursor:pointer;
+}
+.kopier:hover{color:var(--messing);border-color:var(--messing)}
+.kopier:focus-visible{outline:2px solid var(--messing);outline-offset:2px}
+
+/* ---------- Framdrift ---------- */
+.framdrift{
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  margin-top:28px;padding:18px 22px;
+  border:1px solid var(--strek);border-radius:4px;background:var(--panel2);
+}
+.stolpe{flex:1 1 200px;height:6px;background:var(--natt);border-radius:3px;overflow:hidden;min-width:150px}
+.stolpe i{display:block;height:100%;width:0;background:var(--messing);transition:width .35s ease}
+.framdrift .tall{font-family:var(--mono);font-size:14px;color:var(--dempet);white-space:nowrap}
+.framdrift.klar{border-color:var(--mose)}
+.framdrift.klar .stolpe i{background:var(--mose)}
+.framdrift.klar .tall{color:var(--mose)}
+
+/* ---------- Diverse ---------- */
+h3.mellom{font-size:22px;font-weight:400;margin:40px 0 8px}
+h4{font-size:17px;font-weight:400;margin:26px 0 6px;color:var(--messing)}
+p{max-width:66ch}
+ul.liste{color:var(--dempet);padding-left:22px;max-width:64ch}
+ul.liste li{margin:5px 0}
+.knapp{
+  display:inline-block;font-family:var(--mono);font-size:14px;
+  background:var(--messing);color:#221B08;border:none;border-radius:3px;
+  padding:11px 20px;cursor:pointer;text-decoration:none;
+}
+.knapp:hover{background:#F2BE5F}
+.knapp:focus-visible{outline:2px solid var(--tekst);outline-offset:2px}
+.knapp.stille{background:none;color:var(--dempet);border:1px solid var(--strek)}
+.knapp.stille:hover{color:var(--messing);border-color:var(--messing);background:none}
+.notat{
+  border-left:2px solid var(--messing-dyp);padding:2px 0 2px 16px;
+  color:var(--dempet);margin:16px 0;max-width:64ch;
+}
+.notat.feil{border-left-color:var(--rust)}
+.rad{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:22px}
+table{border-collapse:collapse;width:100%;max-width:660px;margin:14px 0;font-size:15px}
+th,td{text-align:left;padding:9px 16px 9px 0;border-bottom:1px solid var(--strek);vertical-align:top}
+th{color:var(--messing);font-weight:400;font-family:var(--mono);font-size:13px}
+td code{font-size:13px}
+footer{margin-top:110px;padding-top:24px;border-top:1px solid var(--strek);color:var(--dempet);font-size:14px}
+footer a{color:var(--messing)}
+
+@media (max-width:620px){
+  body{font-size:16px}
+  .wrap{padding:0 16px 80px}
+  .navinner{padding:0 16px}
+  .merkenavn{font-size:17px;padding-right:14px;margin-right:14px}
+  .fane{padding:14px 13px 12px;font-size:16px}
+  .panel{padding:22px 18px}
+  .steg{padding-left:56px}
+  .oppg{gap:12px}
+  #historie{padding:20px 16px}
+  #valg{padding:0 16px 18px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+<div class="navbar">
+  <div class="navinner">
+    <h1 class="merkenavn">Teksteventyr</h1>
+    <div class="faner" id="faner" role="tablist" aria-label="Timen">
+    <button class="fane" type="button" id="fane-spill" role="tab"
+            aria-controls="spill" aria-selected="true">
+      <span class="tall">1</span> Spill eventyret
+    </button>
+    <button class="fane laast" type="button" id="fane-del1" role="tab"
+            aria-controls="del1" aria-selected="false" tabindex="-1">
+      <span class="tall">2</span> Det glemte slottet
+      <svg class="hengelaas" width="11" height="13" viewBox="0 0 36 42" aria-hidden="true">
+        <path d="M10 18V12a8 8 0 0 1 16 0v6" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <rect x="4" y="18" width="28" height="21" rx="3" stroke="currentColor" stroke-width="4" fill="none"/>
+      </svg>
+    </button>
+    <button class="fane laast" type="button" id="fane-del2" role="tab"
+            aria-controls="del2" aria-selected="false" tabindex="-1">
+      <span class="tall">3</span> Ditt eget eventyr
+      <svg class="hengelaas" width="11" height="13" viewBox="0 0 36 42" aria-hidden="true">
+        <path d="M10 18V12a8 8 0 0 1 16 0v6" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <rect x="4" y="18" width="28" height="21" rx="3" stroke="currentColor" stroke-width="4" fill="none"/>
+      </svg>
+    </button>
+    <button class="fane" type="button" id="fane-oppslag" role="tab"
+            aria-controls="oppslag" aria-selected="false" tabindex="-1">
+      Oppslag
+    </button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ================= STEG 1 ================= -->
+<section class="del" id="spill" role="tabpanel" aria-labelledby="fane-spill">
+  <div class="seksjonstopp">
+    <span class="nr">Steg 1</span>
+    <h2 class="stor">No Reply from Nordlys</h2>
+  </div>
+  <p class="leder">Timen har tre etapper: du spiller, du fullfører et spill noen andre har begynt på,
+  og til slutt bygger du ditt eget.</p>
+  <p class="leder">Vi starter her. Spillet er på engelsk. Du våkner i hangaren på en romstasjon
+  som ingen har svart fra på fire døgn. Spill til du kommer deg vekk. Da låses steg 2 opp.</p>
+
+  <div id="spillpanel">
+    <div class="skjermtopp">
+      <div><b>STATION NORDLYS</b> &nbsp; <span id="sted">docking bay</span></div>
+      <div class="maaler" id="maalere" aria-live="polite">
+        <div>Oxygen <span id="mOksygen">24</span></div>
+        <div>Pack <span id="mSekk">empty</span></div>
+      </div>
+    </div>
+    <div id="historie" aria-live="polite"></div>
+    <div id="valg"></div>
+  </div>
+
+  <div class="rad">
+    <button class="knapp stille" id="nyttSpill" type="button">Start på nytt</button>
+    <button class="knapp stille skjult" id="hoppOver" type="button">Jeg har spilt ferdig, lås opp steg 2</button>
+  </div>
+</section>
+
+
+<!-- ================= STEG 2 ================= -->
+<section class="del" id="del1" role="tabpanel" aria-labelledby="fane-del1" hidden>
+  <div class="seksjonstopp">
+    <span class="nr">Steg 2</span>
+    <h2 class="stor">Det glemte slottet</h2>
+  </div>
+  <p class="leder">Et helt annet eventyr, denne gangen i Python. Halve spillet er skrevet.
+  De åtte hullene er dine.</p>
+
+  <div class="laas" id="laas1">
+    <svg width="36" height="42" viewBox="0 0 36 42" fill="none" aria-hidden="true">
+      <path d="M10 18V12a8 8 0 0 1 16 0v6" stroke="#8C6620" stroke-width="2.5" stroke-linecap="round"/>
+      <rect x="4" y="18" width="28" height="21" rx="3" stroke="#8C6620" stroke-width="2.5"/>
+      <circle cx="18" cy="27" r="2.5" fill="#8C6620"/>
+    </svg>
+    <p><strong>Låst.</strong> Spill deg gjennom Nødsignal fra Nordlys først. Det tar under ti minutter, og det er der du ser hva et teksteventyr faktisk er.</p>
+  </div>
+
+  <div id="innhold1" class="skjult">
+
+    <div class="panel">
+      <h3 class="mellom" style="margin-top:0">Kom i gang</h3>
+      <p>Lag en ny fil som heter <code>slottet.py</code> og lim inn koden under.
+      Der det står <code>OPPGAVE</code>, mangler det kode. Det er den du skal skrive.</p>
+      <p>Kjør spillet ofte, gjerne etter hver oppgave. Da vet du alltid hvilken linje
+      som er skyld i feilen.</p>
+
+      <div class="kodeboks">
+        <button class="kopier" type="button" data-for="src-slottet">Kopier koden</button>
+        <pre data-src="src-slottet"></pre>
+      </div>
+    </div>
+
+    <h3 class="mellom">De åtte oppgavene</h3>
+    <p class="leder">Hak av etter hvert. Alle åtte må være haket av før steg 3 åpner seg.</p>
+
+    <ol class="oppgaver" id="kjerneliste">
+
+      <li>
+        <div class="oppg">
+          <div class="krysse"><input type="checkbox" class="kjerne" id="k1" aria-labelledby="k1t"></div>
+          <div class="innhold">
+            <h3 id="k1t"><span class="num">1.</span> Skriv ferdig <code>vis_status()</code> <span class="merke">funksjon</span></h3>
+            <p>Funksjonen finnes allerede, men den gjør ingenting. Den skal skrive ut hvor mange liv
+            du har, og hva du bærer på. Bruk en <code>for</code>-løkke til å skrive ut hver ting i sekken
+            på hver sin linje. Er sekken tom, skal den si det.</p>
+            <details>
+              <summary>Vis hint</summary>
+              <p>En funksjon kan lese variabler som er laget utenfor den. <code>liv</code> og
+              <code>inventar</code> er allerede tilgjengelige inne i funksjonen, du trenger ikke
+              sende dem inn.</p>
+              <div class="kodeboks">
+                <button class="kopier" type="button" data-for="src-h1">Kopier</button>
+                <pre data-src="src-h1"></pre>
+              </div>
+              <p>Husk <code>pass</code> må bort når du skriver ekte kode inn i funksjonen.</p>
+            </details>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="oppg">
+          <div class="krysse"><input type="checkbox" class="kjerne" id="k2" aria-labelledby="k2t"></div>
+          <div class="innhold">
+            <h3 id="k2t"><span class="num">2.</span> Kisten og gullnøkkelen <span class="merke">liste</span></h3>
+            <p>Spør spilleren om hen vil åpne kisten. Åpner hen den, skal
+            <code>"gullnøkkel"</code> legges i <code>inventar</code>, og spilleren skal få vite
+            hva hen fant. Ellers går hen videre uten nøkkelen.</p>
+            <details>
+              <summary>Vis hint</summary>
+              <p>Bruk <code>spor()</code> til å spørre, akkurat som lenger oppe i koden.</p>
+              <div class="kodeboks">
+                <button class="kopier" type="button" data-for="src-h2">Kopier</button>
+                <pre data-src="src-h2"></pre>
+              </div>
+            </details>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="oppg">
+          <div class="krysse"><input type="checkbox" class="kjerne" id="k3" aria-labelledby="k3t"></div>
+          <div class="innhold">
+            <h3 id="k3t"><span class="num">3.</span> Kampen mot trollet <span class="merke">while-løkke</span></h3>
+            <p>Lag en løkke som går så lenge både trollet og du lever. Hver runde velger spilleren
+            <code>ANGRIP</code> eller <code>FLYKT</code>.</p>
+            <ul class="liste">
+              <li>Angriper du: trekk fra <code>troll_liv</code> med et tilfeldig tall fra 1 til 4, og si hvor hardt du traff.</li>
+              <li>Lever trollet fortsatt: det slår tilbake, og du mister liv. Hvor mye det kan slå står i <code>fiender</code>.</li>
+              <li>Flykter du: avslutt løkken med <code>break</code>.</li>
+            </ul>
+            <details>
+              <summary>Vis hint</summary>
+              <p>Betingelsen må sjekke to ting samtidig. Bruk <code>and</code>.
+              Skaden trollet gjør henter du fra dictionaryen: <code>troll["min_skade"]</code> og
+              <code>troll["maks_skade"]</code>.</p>
+              <div class="kodeboks">
+                <button class="kopier" type="button" data-for="src-h3">Kopier</button>
+                <pre data-src="src-h3"></pre>
+              </div>
+              <p class="notat feil">Går løkken i evig runde? Da er det som regel fordi ingenting inni
+              den endrer <code>troll_liv</code> eller <code>liv</code>.</p>
+            </details>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="oppg">
+          <div class="krysse"><input type="checkbox" class="kjerne" id="k4" aria-labelledby="k4t"></div>
+          <div class="innhold">
+            <h3 id="k4t"><span class="num">4.</span> Den låste døren <span class="merke">if / in</span></h3>
+            <p>Sjekk om <code>"gullnøkkel"</code> ligger i <code>inventar</code>.
+            Har du den: åpne døren, skriv en seiersmelding og sett <code>spiller = False</code>
+            så spillet stopper. Har du den ikke: si at døren er låst, og la spilleren fortsette.</p>
+            <details>
+              <summary>Vis hint</summary>
+              <div class="kodeboks">
+                <button class="kopier" type="button" data-for="src-h4">Kopier</button>
+                <pre data-src="src-h4"></pre>
+              </div>
+            </details>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="oppg">
+          <div class="krysse"><input type="checkbox" class="kjerne" id="k5" aria-labelledby="k5t"></div>
+          <div class="innhold">
+            <h3 id="k5t"><span class="num">5.</span> To hendelser i skogen <span class="merke">random</span></h3>
+            <p>La <code>terning(1, 2)</code> avgjøre hva som skjer i buskene. Den ene gangen finner
+            spilleren en helsedrikk som legges i sekken. Den andre gangen skjer det noe som koster liv.</p>
+            <details>
+              <summary>Vis hint</summary>
+              <div class="kodeboks">
+                <button class="kopier" type="button" data-for="src-h5">Kopier</button>
+                <pre data-src="src-h5"></pre>
+              </div>
+              <p>Legger du helsedrikken i sekken hver eneste gang, ender spilleren med tjue av dem.
+              Sjekk gjerne med <code>if "helsedrikk" not in inventar:</code> først.</p>
+            </details>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="oppg">
+          <div class="krysse"><input type="checkbox" class="kjerne" id="k6" aria-labelledby="k6t"></div>
+          <div class="innhold">
+            <h3 id="k6t"><span class="num">6.</span> Én fiende til <span class="merke">dictionary</span></h3>
+            <p>Legg en fiende til i <code>fiender</code>, for eksempel en rotte. Den skal ha
+            de samme tre nøklene som trollet, men lavere tall. Bruk den så som den farlige
+            hendelsen i skogen, i stedet for et løst tilfeldig tall.</p>
+            <details>
+              <summary>Vis hint</summary>
+              <p>En dictionary inni en dictionary. Ytre nøkkel er navnet på fienden, verdien er
+              en ny dictionary med egenskapene.</p>
+              <div class="kodeboks">
+                <button class="kopier" type="button" data-for="src-h6">Kopier</button>
+                <pre data-src="src-h6"></pre>
+              </div>
+              <p class="notat feil"><code>KeyError: 'rotte'</code> betyr at nøkkelen ikke finnes.
+              Sjekk at du har skrevet navnet helt likt begge steder, med samme små bokstaver.</p>
+            </details>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="oppg">
+          <div class="krysse"><input type="checkbox" class="kjerne" id="k7" aria-labelledby="k7t"></div>
+          <div class="innhold">
+            <h3 id="k7t"><span class="num">7.</span> Game over <span class="merke">variabel</span></h3>
+            <p>Nederst i hovedløkken: er <code>liv</code> null eller mindre, skal spillet skrive
+            GAME OVER og stoppe. Dette skjer helt til slutt i runden, slik at alt annet rekker å
+            skje først.</p>
+            <details>
+              <summary>Vis hint</summary>
+              <div class="kodeboks">
+                <button class="kopier" type="button" data-for="src-h7">Kopier</button>
+                <pre data-src="src-h7"></pre>
+              </div>
+              <p>Legg merke til at koden må stå med samme innrykk som <code>valg = spor(...)</code>,
+              altså inni <code>while</code>-løkken, men utenfor alle <code>if</code>-ene.</p>
+            </details>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="oppg">
+          <div class="krysse"><input type="checkbox" class="kjerne" id="k8" aria-labelledby="k8t"></div>
+          <div class="innhold">
+            <h3 id="k8t"><span class="num">8.</span> Test at spillet holder</h3>
+            <p>Spill gjennom flere ganger og kryss av når alt dette stemmer:</p>
+            <ul class="liste">
+              <li>Du klarer å vinne. Nøkkel, troll, dør, seier.</li>
+              <li>Du klarer å tape. Spillet skriver GAME OVER og stopper.</li>
+              <li>Du skriver <code>Slottet</code> med stor S, og det virker likevel.</li>
+              <li>Du skriver noe helt annet, som <code>pizza</code>, og programmet krasjer ikke.</li>
+              <li>Du kan flykte fra trollet og gjøre noe annet etterpå.</li>
+            </ul>
+          </div>
+        </div>
+      </li>
+
+    </ol>
+
+    <div class="framdrift" id="framdrift1">
+      <div class="stolpe"><i id="stolpe1"></i></div>
+      <div class="tall" id="tall1">0 av 8</div>
+    </div>
+
+    <h3 class="mellom">Ekstra utfordringer</h3>
+    <p class="leder">Frivillig. Ta én eller flere hvis du blir ferdig før de andre.</p>
+
+    <ol class="oppgaver" id="ekstraliste">
+      <li>
+        <div class="oppg">
+          <div class="krysse"><input type="checkbox" class="ekstra" id="e1" aria-labelledby="e1t"></div>
+          <div class="innhold">
+            <h3 id="e1t"><span class="num">A.</span> Drikk helsedrikken</h3>
+            <p>Har du <code>"helsedrikk"</code> i sekken, skal du kunne drikke den midt i kampen.
+            Den gir liv, og forsvinner etterpå med <code>inventar.remove("helsedrikk")</code>.</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="oppg">
+          <div class="krysse"><input type="checkbox" class="ekstra" id="e2" aria-labelledby="e2t"></div>
+          <div class="innhold">
+            <h3 id="e2t"><span class="num">B.</span> Tilfeldig fiende</h3>
+            <p>Bruk <code>random.choice(list(fiender))</code> til å trekke en tilfeldig fiende fra
+            dictionaryen din, i stedet for å bestemme på forhånd hvem spilleren møter.</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="oppg">
+          <div class="krysse"><input type="checkbox" class="ekstra" id="e3" aria-labelledby="e3t"></div>
+          <div class="innhold">
+            <h3 id="e3t"><span class="num">C.</span> Poeng</h3>
+            <p>Lag <code>poeng = 0</code> og gi poeng for skatter, beseirede fiender og nye steder.
+            Vis summen når spillet er over.</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="oppg">
+          <div class="krysse"><input type="checkbox" class="ekstra" id="e4" aria-labelledby="e4t"></div>
+          <div class="innhold">
+            <h3 id="e4t"><span class="num">D.</span> Et nytt sted</h3>
+            <p>Fangehullet, biblioteket, tårnet, kjøkkenet, en tunnel under slottet.
+            Stedet må ha minst ett valg som betyr noe.</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="oppg">
+          <div class="krysse"><input type="checkbox" class="ekstra" id="e5" aria-labelledby="e5t"></div>
+          <div class="innhold">
+            <h3 id="e5t"><span class="num">E.</span> En avslutning til</h3>
+            <p>Gi spillet en annen slutt enn skattkammeret. Rømme fra slottet med nøkkelen,
+            eller en helt annen dør.</p>
+          </div>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+
+<!-- ================= STEG 3 ================= -->
+<section class="del" id="del2" role="tabpanel" aria-labelledby="fane-del2" hidden>
+  <div class="seksjonstopp">
+    <span class="nr">Steg 3</span>
+    <h2 class="stor">Ditt eget eventyr</h2>
+  </div>
+  <p class="leder">Ny fil, blankt ark, ditt tema. Nå er det ingen som har skrevet halve spillet for deg.</p>
+
+  <div class="laas" id="laas2">
+    <svg width="36" height="42" viewBox="0 0 36 42" fill="none" aria-hidden="true">
+      <path d="M10 18V12a8 8 0 0 1 16 0v6" stroke="#8C6620" stroke-width="2.5" stroke-linecap="round"/>
+      <rect x="4" y="18" width="28" height="21" rx="3" stroke="#8C6620" stroke-width="2.5"/>
+      <circle cx="18" cy="27" r="2.5" fill="#8C6620"/>
+    </svg>
+    <p><strong>Låst.</strong> <span id="laas2tekst">Hak av alle åtte oppgavene i steg 2.</span></p>
+  </div>
+
+  <div id="innhold2" class="skjult">
+
+    <div class="panel">
+      <h3 class="mellom" style="margin-top:0">Velg verden</h3>
+      <p>Lag en ny fil, for eksempel <code>mitt_eventyr.py</code>. Du bestemmer alt selv.
+      Noen som pleier å fungere:</p>
+      <ul class="liste">
+        <li>et romskip du må rømme fra før det treffer atmosfæren</li>
+        <li>en øde øy, en forlatt gruve, et hjemsøkt hus</li>
+        <li>en kriminalsak der du avhører vitner</li>
+        <li>skolen din, etter at noe merkelig har skjedd i kjelleren</li>
+        <li>inni et dataspill du ikke kommer ut av</li>
+      </ul>
+      <p>Velg noe du selv har lyst til å skrive tekst om. Du kommer til å skrive mye tekst.</p>
+    </div>
+
+    <h3 class="mellom">Krav til spillet</h3>
+    <p class="leder">Alt dette må være med. Hak av mens du jobber, så ser du hva som gjenstår.</p>
+
+    <ol class="oppgaver" id="kravliste">
+      <li><div class="oppg">
+        <div class="krysse"><input type="checkbox" class="krav" id="q1" aria-labelledby="q1t"></div>
+        <div class="innhold"><h3 id="q1t"><span class="num">1.</span> Minst fire valg spilleren kan ta</h3>
+        <p>Med <code>input()</code>, og <code>if</code> / <code>elif</code> / <code>else</code> som gjør noe forskjellig med hvert svar.</p></div>
+      </div></li>
+      <li><div class="oppg">
+        <div class="krysse"><input type="checkbox" class="krav" id="q2" aria-labelledby="q2t"></div>
+        <div class="innhold"><h3 id="q2t"><span class="num">2.</span> Minst én <code>while</code>-løkke</h3>
+        <p>Hovedløkken teller. Den må kunne avsluttes, ellers kommer spilleren aldri ut.</p></div>
+      </div></li>
+      <li><div class="oppg">
+        <div class="krysse"><input type="checkbox" class="krav" id="q3" aria-labelledby="q3t"></div>
+        <div class="innhold"><h3 id="q3t"><span class="num">3.</span> Minst én liste</h3>
+        <p>En sekk, en liste over rom du har besøkt, en liste over spor i saken.</p></div>
+      </div></li>
+      <li><div class="oppg">
+        <div class="krysse"><input type="checkbox" class="krav" id="q4" aria-labelledby="q4t"></div>
+        <div class="innhold"><h3 id="q4t"><span class="num">4.</span> Minst én egen funksjon <span class="merke">nytt</span></h3>
+        <p>Finn noe du skriver flere ganger, og gjør det om til en funksjon. Status, en kamp,
+        eller bare et spørsmål du stiller ofte.</p></div>
+      </div></li>
+      <li><div class="oppg">
+        <div class="krysse"><input type="checkbox" class="krav" id="q5" aria-labelledby="q5t"></div>
+        <div class="innhold"><h3 id="q5t"><span class="num">5.</span> Minst én dictionary <span class="merke">nytt</span></h3>
+        <p>Fiender, rom, gjenstander, mistenkte. Alt som har flere egenskaper hver.</p></div>
+      </div></li>
+      <li><div class="oppg">
+        <div class="krysse"><input type="checkbox" class="krav" id="q6" aria-labelledby="q6t"></div>
+        <div class="innhold"><h3 id="q6t"><span class="num">6.</span> En variabel som endrer seg underveis</h3>
+        <p>Liv, oksygen, penger, tid, mistanke. Noe spilleren kan se går feil vei.</p></div>
+      </div></li>
+      <li><div class="oppg">
+        <div class="krysse"><input type="checkbox" class="krav" id="q7" aria-labelledby="q7t"></div>
+        <div class="innhold"><h3 id="q7t"><span class="num">7.</span> <code>random</code> minst ett sted</h3>
+        <p>Så to gjennomspillinger ikke blir helt like.</p></div>
+      </div></li>
+      <li><div class="oppg">
+        <div class="krysse"><input type="checkbox" class="krav" id="q8" aria-labelledby="q8t"></div>
+        <div class="innhold"><h3 id="q8t"><span class="num">8.</span> Minst to forskjellige avslutninger</h3>
+        <p>Og begge må være mulige å nå. Test det.</p></div>
+      </div></li>
+    </ol>
+
+    <div class="framdrift" id="framdrift2">
+      <div class="stolpe"><i id="stolpe2"></i></div>
+      <div class="tall" id="tall2">0 av 8</div>
+    </div>
+
+    <h3 class="mellom">Tegn kartet før du skriver kode</h3>
+    <p>Det tar fem minutter og sparer deg for en time. Tegn på papir hvilke steder som finnes,
+    og hvilke valg som fører hvor.</p>
+
+    <div class="kodeboks">
+      <pre data-src="src-kart"></pre>
+    </div>
+
+    <p>Svar på disse fire før du begynner:</p>
+    <ul class="liste">
+      <li>Hva prøver spilleren å oppnå?</li>
+      <li>Hvordan kan spilleren vinne?</li>
+      <li>Hvordan kan spilleren tape?</li>
+      <li>Hva må programmet huske underveis? Det blir variablene dine.</li>
+    </ul>
+
+    <h3 class="mellom">Startkode</h3>
+    <p>Vet du ikke hvor du skal begynne, er dette et skjelett som allerede oppfyller
+    krav 2, 3, 4 og 5. Bytt ut alt innholdet med ditt eget.</p>
+
+    <div class="kodeboks">
+      <button class="kopier" type="button" data-for="src-start">Kopier koden</button>
+      <pre data-src="src-start"></pre>
+    </div>
+
+    <h3 class="mellom">Test som om du ville ødelegge det</h3>
+    <p>Et spill er ikke ferdig fordi det kjørte én gang. Prøv:</p>
+    <ul class="liste">
+      <li>STORE BOKSTAVER, og svar med skrivefeil</li>
+      <li>bare å trykke enter uten å skrive noe</li>
+      <li>et tall der du forventet et ord</li>
+      <li>å vinne, og å tape</li>
+      <li>å ta samme valg to ganger på rad</li>
+    </ul>
+    <p class="notat">Til slutt: la en medelev spille uten at du forklarer noe.
+    Ikke si et ord. Der hen blir sittende og lure, har du funnet det du skal fikse.</p>
+  </div>
+</section>
+
+<!-- ================= OPPSLAG ================= -->
+<section class="del" id="oppslag" role="tabpanel" aria-labelledby="fane-oppslag" hidden>
+  <div class="seksjonstopp">
+    <span class="nr">Oppslag</span>
+    <h2 class="stor">Når du står fast</h2>
+  </div>
+  <p class="leder">Åpen hele timen. Slå opp det du trenger, og lukk det igjen.</p>
+
+  <div class="panel">
+    <h3 class="mellom" style="margin-top:0">Det du kan fra før</h3>
+
+    <h4>Variabler</h4>
+    <p>En variabel er et navn som husker en verdi. Den kan endres når som helst.</p>
+    <div class="kodeboks">
+      <pre data-src="src-var"></pre>
+    </div>
+    <p class="notat feil"><code>liv = liv - 2</code> endrer variabelen.
+    <code>liv - 2</code> alene gjør ingenting, tallet blir bare regnet ut og kastet.</p>
+
+    <h4>Løkker</h4>
+    <p><code>while</code> gjentar så lenge noe er sant. <code>for</code> går gjennom en liste,
+    én ting om gangen.</p>
+    <div class="kodeboks">
+      <pre data-src="src-lokke"></pre>
+    </div>
+
+    <h4>Lister</h4>
+    <p>En liste er flere verdier på rekke, i den rekkefølgen du la dem inn.
+    Listevariabel og array er andre navn på det samme.</p>
+    <div class="kodeboks">
+      <pre data-src="src-liste"></pre>
+    </div>
+
+    <h4>Tilfeldige tall</h4>
+    <div class="kodeboks">
+      <pre data-src="src-random"></pre>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3 class="mellom" style="margin-top:0">Funksjoner, grundig</h3>
+    <p>En funksjon er en oppskrift du gir et navn. Du skriver den én gang, og bruker den
+    så mange ganger du vil. Skal du endre noe, endrer du ett sted.</p>
+
+    <h4>Lage den, og bruke den</h4>
+    <p><code>def</code> lager oppskriften. Ingenting skjer før du kaller den med navnet og parentes.</p>
+    <div class="kodeboks">
+      <pre data-src="src-f1"></pre>
+    </div>
+
+    <h4>Sende noe inn: parametere</h4>
+    <p>Det som står i parentesen i <code>def</code>-linjen er navn funksjonen bruker på det
+    du sender inn. Du kan kalle funksjonen med forskjellige verdier hver gang.</p>
+    <div class="kodeboks">
+      <pre data-src="src-f2"></pre>
+    </div>
+
+    <h4>Få noe tilbake: <code>return</code></h4>
+    <p>Dette er den viktigste forskjellen å forstå.
+    <code>print</code> viser noe på skjermen. <code>return</code> gir en verdi tilbake til
+    den som kalte funksjonen, så du kan regne videre med den.</p>
+    <div class="kodeboks">
+      <pre data-src="src-f3"></pre>
+    </div>
+    <table>
+      <tr><th>Du vil</th><th>Bruk</th></tr>
+      <tr><td>vise noe for spilleren</td><td><code>print</code> inni funksjonen</td></tr>
+      <tr><td>regne ut noe du trenger senere</td><td><code>return</code></td></tr>
+      <tr><td>begge deler</td><td>begge deler, det er helt lov</td></tr>
+    </table>
+
+    <h4>Fra gjentakelse til funksjon</h4>
+    <p>Slik gjør du om kode du har skrevet tre ganger:</p>
+    <div class="kodeboks">
+      <pre data-src="src-f4"></pre>
+    </div>
+
+    <h4>Vanlige feil</h4>
+    <table>
+      <tr><th>Det ser slik ut</th><th>Det er som regel dette</th></tr>
+      <tr><td>Ingenting skjer</td><td>Du glemte parentesene. <code>vis_status</code> er navnet, <code>vis_status()</code> kjører den.</td></tr>
+      <tr><td><code>NameError: name ... is not defined</code></td><td><code>def</code>-en står lenger ned i filen enn stedet du kaller den fra. Flytt alle <code>def</code> opp.</td></tr>
+      <tr><td><code>TypeError: ... takes 0 positional arguments but 1 was given</code></td><td>Du sender inn noe, men <code>def</code>-linjen har tom parentes.</td></tr>
+      <tr><td>Du får <code>None</code></td><td>Funksjonen bruker <code>print</code> der den skulle brukt <code>return</code>.</td></tr>
+      <tr><td>Endringen inne i funksjonen forsvant</td><td>Tall og tekst kan ikke endres inne i en funksjon uten videre. Bruk <code>return</code> og ta imot verdien.</td></tr>
+    </table>
+
+    <details>
+      <summary>Tre små øvelser du kan teste i en egen fil</summary>
+      <ul class="liste">
+        <li>Lag <code>hils(navn)</code> som skriver <code>Hei, Ada!</code> når du kaller <code>hils("Ada")</code>.</li>
+        <li>Lag <code>dobbelt(tall)</code> som <em>returnerer</em> tallet ganget med to. Skriv ut <code>dobbelt(dobbelt(3))</code>.</li>
+        <li>Lag <code>er_tom(sekk)</code> som returnerer <code>True</code> hvis listen er tom.</li>
+      </ul>
+    </details>
+  </div>
+
+  <div class="panel">
+    <h3 class="mellom" style="margin-top:0">Dictionary, grundig</h3>
+    <p>En liste finner du ting i etter plass: nummer 0, nummer 1. En dictionary finner du ting i
+    etter navn. Det er forskjellen, og navn er som regel lettere å huske enn nummer.</p>
+
+    <div class="kodeboks">
+      <pre data-src="src-d1"></pre>
+    </div>
+
+    <h4>Lese, endre, legge til</h4>
+    <div class="kodeboks">
+      <pre data-src="src-d2"></pre>
+    </div>
+
+    <h4>Dictionary inni dictionary</h4>
+    <p>Dette er mønsteret vi bruker i slottet. Hver fiende har et navn, og bak navnet ligger
+    en hel liten dictionary med egenskapene til akkurat den fienden.</p>
+    <div class="kodeboks">
+      <pre data-src="src-d3"></pre>
+    </div>
+    <p>Les det innenfra og ut: <code>fiender["troll"]</code> gir deg trollets dictionary,
+    og <code>["liv"]</code> henter <code>liv</code> ut av den.</p>
+
+    <h4>Gå gjennom hele dictionaryen</h4>
+    <div class="kodeboks">
+      <pre data-src="src-d4"></pre>
+    </div>
+
+    <h4>Liste eller dictionary?</h4>
+    <table>
+      <tr><th>Du har</th><th>Bruk</th></tr>
+      <tr><td>ting på rekke, rekkefølgen betyr noe</td><td>liste: <code>["sverd", "brød"]</code></td></tr>
+      <tr><td>ting du slår opp på navn</td><td>dictionary: <code>{"sverd": 5}</code></td></tr>
+      <tr><td>ting som har flere egenskaper hver</td><td>dictionary med dictionary inni</td></tr>
+    </table>
+
+    <h4>Vanlige feil</h4>
+    <table>
+      <tr><th>Det ser slik ut</th><th>Det er som regel dette</th></tr>
+      <tr><td><code>KeyError: 'rotte'</code></td><td>Nøkkelen finnes ikke. Skrivefeil, eller stor forbokstav ett av stedene.</td></tr>
+      <tr><td><code>TypeError: list indices must be integers</code></td><td>Du bruker <code>[navn]</code> på noe som faktisk er en liste.</td></tr>
+      <tr><td><code>KeyError</code> på noe du var sikker på at fantes</td><td>Du la det inn <em>etter</em> at du forsøkte å lese det. Rekkefølgen i filen betyr alt.</td></tr>
+      <tr><td>Du er usikker på om nøkkelen finnes</td><td>Sjekk først: <code>if "rotte" in fiender:</code></td></tr>
+    </table>
+
+    <details>
+      <summary>Tre små øvelser du kan teste i en egen fil</summary>
+      <ul class="liste">
+        <li>Lag en dictionary med tre rom og en kort beskrivelse av hvert. Skriv ut beskrivelsen av ett av dem.</li>
+        <li>Legg til et fjerde rom etterpå, uten å skrive om de tre første.</li>
+        <li>Skriv en <code>for</code>-løkke som skriver ut alle romnavnene på hver sin linje.</li>
+      </ul>
+    </details>
+  </div>
+
+  <div class="panel">
+    <h3 class="mellom" style="margin-top:0">Feilmeldinger du kommer til å se</h3>
+    <table>
+      <tr><th>Melding</th><th>Betydning</th></tr>
+      <tr><td><code>IndentationError</code></td><td>Feil innrykk. Python bruker innrykk til å se hva som hører sammen. Bruk fire mellomrom, og vær konsekvent.</td></tr>
+      <tr><td><code>SyntaxError: invalid syntax</code></td><td>Ofte et manglende kolon etter <code>if</code>, <code>while</code>, <code>for</code> eller <code>def</code>. Se på linjen <em>over</em> også.</td></tr>
+      <tr><td><code>NameError</code></td><td>Du bruker et navn som ikke finnes ennå. Skrivefeil, eller du laget variabelen lenger ned.</td></tr>
+      <tr><td><code>TypeError: can only concatenate str</code></td><td>Du prøver å legge tekst og tall sammen. Bruk komma i <code>print</code>: <code>print("Liv:", liv)</code></td></tr>
+      <tr><td>Programmet henger</td><td>Evig løkke. Noe inni <code>while</code> må endre det betingelsen sjekker. Trykk Ctrl + C for å stoppe.</td></tr>
+    </table>
+  </div>
+</section>
+
+<footer>
+  <p>Framdriften din lagres i denne nettleseren. Bytter du maskin, eller åpner siden i privat vindu,
+  starter du på nytt. <button class="kopier" type="button" id="nullstill" style="position:static;margin-left:4px">Nullstill alt</button></p>
+</footer>
+
+</div>
+
+
+<!-- ============ KODEEKSEMPLER ============ -->
+
+<script type="text/plain" id="src-slottet">
+import random
+
+# ---------- VARIABLER ----------
+
+liv = 10
+inventar = []
+spiller = True
+
+# ---------- DICTIONARY ----------
+# Alt vi trenger å vite om en fiende ligger samlet på ett sted.
+
+fiender = {
+    "troll": {"liv": 8, "min_skade": 2, "maks_skade": 4},
+    # OPPGAVE 6: legg til én fiende til her
+}
+
+# ---------- FUNKSJONER ----------
+
+def vis_status():
+    # OPPGAVE 1: skriv ut liv, og alt spilleren har i sekken
+    pass
+
+
+def terning(minste, storste):
+    """Gir et tilfeldig heltall fra minste til og med storste."""
+    return random.randint(minste, storste)
+
+
+def spor(sporsmal):
+    """Stiller et spørsmål og gjør svaret om til små bokstaver."""
+    return input(sporsmal).lower().strip()
+
+
+# ---------- SPILLET ----------
+
+print("DET GLEMTE SLOTTET")
+print()
+print("Du våkner utenfor et forlatt slott.")
+print("Porten står på gløtt.")
+
+while spiller:
+
+    print()
+    vis_status()
+    print()
+
+    valg = spor("Går du inn i SLOTTET eller inn i SKOGEN? ")
+
+    if valg == "slottet":
+
+        print()
+        print("Inngangshallen er kald og mørk.")
+        print("Du ser en gammel tredør, og en trapp som går opp i mørket.")
+
+        valg = spor("Velger du DØREN eller TRAPPEN? ")
+
+        if valg == "døren":
+
+            print()
+            print("Bak døren står en stor kiste med jernbeslag.")
+
+            # OPPGAVE 2: spør om spilleren vil åpne kisten.
+            # Åpner hen den: legg "gullnøkkel" i inventar, og fortell hva hen fant.
+            # Ellers: skriv at spilleren lar kisten stå.
+
+        elif valg == "trappen":
+
+            print()
+            print("Halvveis opp reiser et stort troll seg foran deg.")
+            print("INGEN PASSERER, brøler det.")
+
+            troll = fiender["troll"]
+            troll_liv = troll["liv"]
+
+            # OPPGAVE 3: lag kampen her.
+            # En while-løkke som går så lenge både trollet og spilleren lever.
+            # Hver runde kan spilleren velge ANGRIP eller FLYKT.
+
+            if troll_liv <= 0:
+
+                print()
+                print("Trollet faller. Bak det står en tung, låst dør.")
+
+                # OPPGAVE 4: har spilleren "gullnøkkel" i inventar?
+                # Ja: åpne døren, skriv seiersmeldingen, sett spiller = False.
+                # Nei: fortell at døren er låst.
+
+        else:
+            print("Du blir stående. Ingenting skjer.")
+
+    elif valg == "skogen":
+
+        print()
+        print("Trærne står tett. Noe rasler i buskene.")
+
+        # OPPGAVE 5: lag to hendelser, og la terning(1, 2) avgjøre hvilken.
+        # Den ene gir spilleren en helsedrikk.
+        # Den andre koster liv.
+
+    else:
+        print("Du må velge SLOTTET eller SKOGEN.")
+
+    # OPPGAVE 7: er liv 0 eller mindre?
+    # Skriv GAME OVER, og stopp spillet.
+</script>
+
+<script type="text/plain" id="src-h1">
+def vis_status():
+    print("Liv:", liv)
+
+    if len(inventar) == 0:
+        print("Sekken er tom.")
+    else:
+        print("I sekken:")
+        for ting in inventar:
+            print(" -", ting)
+</script>
+
+<script type="text/plain" id="src-h2">
+svar = spor("Vil du ÅPNE kisten? ")
+
+if svar == "åpne":
+    inventar.append("gullnøkkel")
+    print(...)      # fortell hva spilleren fant
+else:
+    print(...)      # spilleren lar kisten stå
+</script>
+
+<script type="text/plain" id="src-h3">
+while troll_liv > 0 and liv > 0:
+
+    svar = spor("ANGRIP eller FLYKT? ")
+
+    if svar == "angrip":
+
+        skade = terning(1, 4)
+        troll_liv = troll_liv - skade
+        print(...)          # hvor hardt traff du?
+
+        if troll_liv > 0:
+            tilbake = terning(troll["min_skade"], troll["maks_skade"])
+            liv = liv - tilbake
+            print(...)      # hvor hardt traff trollet?
+
+    elif svar == "flykt":
+        print("Du kaster deg ned trappen igjen.")
+        break
+
+    else:
+        print("Trollet venter. Du må velge.")
+</script>
+
+<script type="text/plain" id="src-h4">
+if "gullnøkkel" in inventar:
+    print("Nøkkelen passer. Låsen klikker.")
+    print(...)              # din egen seiersmelding
+    spiller = False
+else:
+    print("Døren er låst. Et sted i slottet finnes en nøkkel.")
+</script>
+
+<script type="text/plain" id="src-h5">
+hendelse = terning(1, 2)
+
+if hendelse == 1:
+    inventar.append("helsedrikk")
+    print("Du finner en liten flaske i gresset.")
+else:
+    # noe kommer ut av buskene, og du mister liv
+    pass
+</script>
+
+<script type="text/plain" id="src-h6">
+fiender = {
+    "troll": {"liv": 8, "min_skade": 2, "maks_skade": 4},
+    "rotte": {"liv": 2, "min_skade": 1, "maks_skade": 2},
+}
+
+
+# ... og nede i skogen:
+
+rotte = fiender["rotte"]
+skade = terning(rotte["min_skade"], rotte["maks_skade"])
+liv = liv - skade
+print("En rotte biter deg. Du mister", skade, "liv.")
+</script>
+
+<script type="text/plain" id="src-h7">
+if liv <= 0:
+    print()
+    print("GAME OVER")
+    spiller = False
+</script>
+
+<script type="text/plain" id="src-kart">
+Kartet over slottet ser omtrent slik ut. Tegn ditt eget på samme måte.
+
+
+                        START
+                          |
+                    Hvor går du?
+                     /          \
+                 SKOGEN        SLOTTET
+                   |               |
+              Hva skjer?     Dør eller trapp?
+               /     \        /          \
+          drikk      ulv   kiste        troll
+                                          |
+                                       låst dør
+                                       /       \
+                              har nøkkel       har ikke
+                                  |
+                                SEIER
+</script>
+
+<script type="text/plain" id="src-start">
+import random
+
+# ---------- Det programmet må huske ----------
+
+liv = 10
+inventar = []
+spiller = True
+
+# ---------- Fakta om verdenen din ----------
+
+steder = {
+    "broa":   {"tekst": "Skjermene er døde. En luke står på gløtt.", "farlig": False},
+    "lasten": {"tekst": "Noe beveger seg mellom kassene.",           "farlig": True},
+}
+
+# ---------- Oppskrifter du bruker flere ganger ----------
+
+def vis_status():
+    print("Liv:", liv)
+    for ting in inventar:
+        print(" -", ting)
+
+
+def spor(sporsmal):
+    return input(sporsmal).lower().strip()
+
+
+# ---------- Selve spillet ----------
+
+print("MITT EVENTYR")
+
+while spiller:
+
+    print()
+    vis_status()
+
+    valg = spor("Hva gjør du? ")
+
+    if valg == "broa":
+        print(steder["broa"]["tekst"])
+
+    elif valg == "lasten":
+        print(steder["lasten"]["tekst"])
+        liv = liv - random.randint(1, 3)
+
+    elif valg == "slutt":
+        print("Du gir opp.")
+        spiller = False
+
+    else:
+        print("Det skjønte jeg ikke.")
+
+    if liv <= 0:
+        print("GAME OVER")
+        spiller = False
+</script>
+
+<script type="text/plain" id="src-var">
+liv = 10
+navn = "Ada"
+har_nokkel = False
+
+liv = liv - 2      # nå er liv 8
+liv = liv + 5      # nå er liv 13
+</script>
+
+<script type="text/plain" id="src-lokke">
+# while gjentar så lenge noe er sant
+
+liv = 3
+while liv > 0:
+    print("Du lever fortsatt")
+    liv = liv - 1
+
+
+# for tar én runde per ting i lista
+
+inventar = ["sverd", "brød", "nøkkel"]
+for ting in inventar:
+    print("Du har en", ting)
+
+
+# break hopper ut av løkken med en gang
+
+while True:
+    svar = input("Skriv SLUTT: ")
+    if svar == "slutt":
+        break
+</script>
+
+<script type="text/plain" id="src-liste">
+inventar = []
+
+inventar.append("gullnøkkel")     # legg til bakerst
+inventar.remove("gullnøkkel")     # fjern
+
+if "gullnøkkel" in inventar:      # finnes den?
+    print("Du har nøkkelen")
+
+print(len(inventar))              # hvor mange ting
+print(inventar[0])                # den første
+</script>
+
+<script type="text/plain" id="src-random">
+import random
+
+skade = random.randint(1, 4)                 # heltall fra 1 til og med 4
+retning = random.choice(["nord", "sør"])     # trekker én av dem
+</script>
+
+<script type="text/plain" id="src-f1">
+def vis_status():           # her lages oppskriften
+    print("Liv:", liv)
+    print("Sekk:", inventar)
+
+
+vis_status()                # her kjøres den
+vis_status()                # og her, én gang til
+</script>
+
+<script type="text/plain" id="src-f2">
+def hils(navn):
+    print("Hei,", navn)
+
+
+hils("Ada")        # Hei, Ada
+hils("Jonas")      # Hei, Jonas
+
+
+def slag(minste, storste):
+    print("Du slår for", random.randint(minste, storste))
+
+
+slag(1, 4)         # et lite slag
+slag(2, 8)         # et hardere slag
+</script>
+
+<script type="text/plain" id="src-f3">
+def dobbelt_print(tall):
+    print(tall * 2)        # viser svaret
+
+def dobbelt_return(tall):
+    return tall * 2        # gir svaret tilbake
+
+
+a = dobbelt_print(5)       # skriver 10 på skjermen, men a blir None
+b = dobbelt_return(5)      # skriver ingenting, men b blir 10
+
+print(b + 1)               # 11
+print(a + 1)               # krasjer: kan ikke plusse på None
+</script>
+
+<script type="text/plain" id="src-f4">
+# Før: det samme tre steder i filen
+
+print("Liv:", liv, "Sekk:", inventar)
+# ... annen kode ...
+print("Liv:", liv, "Sekk:", inventar)
+# ... annen kode ...
+print("Liv:", liv, "Sekk:", inventar)
+
+
+# Etter: skrevet én gang, brukt tre ganger
+
+def vis_status():
+    print("Liv:", liv, "Sekk:", inventar)
+
+
+vis_status()
+# ... annen kode ...
+vis_status()
+# ... annen kode ...
+vis_status()
+</script>
+
+<script type="text/plain" id="src-d1">
+# liste: du slår opp på plass
+
+sekk = ["sverd", "brød"]
+print(sekk[0])              # sverd
+
+
+# dictionary: du slår opp på navn
+
+skade = {"sverd": 5, "kniv": 2, "stein": 1}
+print(skade["sverd"])       # 5
+</script>
+
+<script type="text/plain" id="src-d2">
+skade = {"sverd": 5, "kniv": 2}
+
+print(skade["kniv"])            # les:  2
+skade["kniv"] = 3               # endre en verdi
+skade["øks"] = 7                # legg til en helt ny nøkkel
+
+if "øks" in skade:              # finnes nøkkelen?
+    print("Du kan bruke øks")
+
+print(skade.get("hammer", 0))   # gir 0 hvis nøkkelen ikke finnes
+</script>
+
+<script type="text/plain" id="src-d3">
+fiender = {
+    "troll": {"liv": 8, "min_skade": 2, "maks_skade": 4},
+    "rotte": {"liv": 2, "min_skade": 1, "maks_skade": 2},
+}
+
+print(fiender["troll"]["liv"])      # 8
+
+
+# det samme, i to rolige steg:
+
+troll = fiender["troll"]            # nå er troll en dictionary
+print(troll["liv"])                 # 8
+</script>
+
+<script type="text/plain" id="src-d4">
+for navn in fiender:
+    print(navn)                     # troll, så rotte
+
+
+for navn, data in fiender.items():
+    print(navn, "har", data["liv"], "liv")
+</script>
+
+
+<script>
+(function () {
+  "use strict";
+
+  /* =================================================================
+     Kodeblokker: hentes fra script-taggene over og settes inn som tekst
+     ================================================================= */
+
+  function rens(t) { return t.replace(/^\n+/, "").replace(/\s+$/, ""); }
+
+  Array.prototype.forEach.call(document.querySelectorAll("pre[data-src]"), function (pre) {
+    var kilde = document.getElementById(pre.getAttribute("data-src"));
+    if (kilde) pre.textContent = rens(kilde.textContent);
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll(".kopier[data-for]"), function (knapp) {
+    knapp.addEventListener("click", function () {
+      var kilde = document.getElementById(knapp.getAttribute("data-for"));
+      if (kilde) kopier(rens(kilde.textContent), knapp);
+    });
+  });
+
+  function kopier(tekst, knapp) {
+    var opprinnelig = knapp.textContent;
+    function ok() {
+      knapp.textContent = "Kopiert";
+      setTimeout(function () { knapp.textContent = opprinnelig; }, 1800);
+    }
+    function reserve() {
+      var ta = document.createElement("textarea");
+      ta.value = tekst;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.top = "-1000px";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); ok(); }
+      catch (e) { knapp.textContent = "Merk koden og kopier selv"; }
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(tekst).then(ok, reserve);
+    } else {
+      reserve();
+    }
+  }
+
+  /* =================================================================
+     Framdrift
+     ================================================================= */
+
+  var NOKKEL = "teksteventyr-v1";
+  var lagret = { spilt: false, fane: "spill", kjerne: {}, ekstra: {}, krav: {} };
+
+  try {
+    var raa = localStorage.getItem(NOKKEL);
+    if (raa) {
+      var inn = JSON.parse(raa);
+      if (inn && typeof inn === "object") {
+        lagret.spilt = !!inn.spilt;
+        if (typeof inn.fane === "string") lagret.fane = inn.fane;
+        ["kjerne", "ekstra", "krav"].forEach(function (p) {
+          if (inn[p] && typeof inn[p] === "object") lagret[p] = inn[p];
+        });
+      }
+    }
+  } catch (e) { /* privat vindu, eller lagring slått av */ }
+
+  function lagre() {
+    try { localStorage.setItem(NOKKEL, JSON.stringify(lagret)); } catch (e) {}
+  }
+
+  function koble(klasse, potte) {
+    Array.prototype.forEach.call(document.querySelectorAll("input." + klasse), function (boks) {
+      boks.checked = !!lagret[potte][boks.id];
+      boks.addEventListener("change", function () {
+        lagret[potte][boks.id] = boks.checked;
+        lagre();
+        oppdater(true);
+      });
+    });
+  }
+
+  function tell(klasse) {
+    var alle = document.querySelectorAll("input." + klasse);
+    var n = 0;
+    Array.prototype.forEach.call(alle, function (b) {
+      var li = b.closest ? b.closest("li") : null;
+      if (li) li.classList.toggle("gjort", b.checked);
+      if (b.checked) n++;
+    });
+    return { antall: n, total: alle.length };
+  }
+
+  function apne(element, animer) {
+    if (!element.classList.contains("skjult")) return;
+    element.classList.remove("skjult");
+    if (animer) {
+      element.classList.add("apner");
+      setTimeout(function () { element.classList.remove("apner"); }, 900);
+    }
+  }
+
+  /* ---- Faner ---- */
+
+  var faner = [
+    { fane: "fane-spill",   panel: "spill" },
+    { fane: "fane-del1",    panel: "del1" },
+    { fane: "fane-del2",    panel: "del2" },
+    { fane: "fane-oppslag", panel: "oppslag" }
+  ];
+  var fanerad = document.getElementById("faner");
+
+  function visFane(panelId, flyttFokus) {
+    var funnet = false;
+    faner.forEach(function (f) {
+      var valgt = f.panel === panelId;
+      if (valgt) funnet = true;
+      var knapp = document.getElementById(f.fane);
+      knapp.setAttribute("aria-selected", valgt ? "true" : "false");
+      knapp.tabIndex = valgt ? 0 : -1;
+      document.getElementById(f.panel).hidden = !valgt;
+      if (valgt && flyttFokus) knapp.focus();
+    });
+    if (!funnet) return visFane("spill", flyttFokus);
+    lagret.fane = panelId;
+    lagre();
+    /* Ny fane starter på toppen, ikke der forrige fane ble forlatt */
+    if (window.scrollY > 0) window.scrollTo(0, 0);
+  }
+
+  function merTilHoyre() {
+    var mer = fanerad.scrollWidth - fanerad.clientWidth - fanerad.scrollLeft > 4;
+    fanerad.classList.toggle("mer", !!mer);
+  }
+  fanerad.addEventListener("scroll", merTilHoyre);
+  window.addEventListener("resize", merTilHoyre);
+  merTilHoyre();
+
+  faner.forEach(function (f, i) {
+    var knapp = document.getElementById(f.fane);
+    knapp.addEventListener("click", function () { visFane(f.panel); });
+    knapp.addEventListener("keydown", function (e) {
+      var flytt = e.key === "ArrowRight" ? 1 : (e.key === "ArrowLeft" ? -1 : 0);
+      if (flytt) {
+        e.preventDefault();
+        visFane(faner[(i + flytt + faner.length) % faner.length].panel, true);
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        visFane(faner[0].panel, true);
+      } else if (e.key === "End") {
+        e.preventDefault();
+        visFane(faner[faner.length - 1].panel, true);
+      }
+    });
+  });
+
+  function oppdater(animer) {
+    var faneSpill = document.getElementById("fane-spill");
+    var faneDel1 = document.getElementById("fane-del1");
+    var faneDel2 = document.getElementById("fane-del2");
+
+    /* Steg 1 -> Steg 2 */
+    if (lagret.spilt) {
+      apne(document.getElementById("innhold1"), animer);
+      document.getElementById("laas1").classList.add("skjult");
+      document.getElementById("hoppOver").classList.add("skjult");
+      faneSpill.classList.add("ferdig");
+      faneDel1.classList.remove("laast");
+    }
+
+    /* Kjerneoppgavene */
+    var k = tell("kjerne");
+    tell("ekstra");
+    var stolpe1 = document.getElementById("stolpe1");
+    if (stolpe1) {
+      stolpe1.style.width = (k.total ? (k.antall / k.total) * 100 : 0) + "%";
+      document.getElementById("tall1").textContent = k.antall + " av " + k.total;
+      document.getElementById("framdrift1").classList.toggle("klar", k.antall === k.total);
+    }
+
+    /* Steg 2 -> Steg 3 */
+    var alleGjort = k.total > 0 && k.antall === k.total;
+    if (alleGjort) {
+      apne(document.getElementById("innhold2"), animer);
+      document.getElementById("laas2").classList.add("skjult");
+      faneDel1.classList.add("ferdig");
+      faneDel2.classList.remove("laast");
+    } else {
+      /* Steg 3 tas ikke bort igjen hvis en hake fjernes, men fanene er ærlige. */
+      var mangler = k.total - k.antall;
+      faneDel1.classList.remove("ferdig");
+      document.getElementById("laas2tekst").textContent =
+        "Hak av de åtte oppgavene i steg 2. Du mangler " + mangler +
+        (mangler === 1 ? " oppgave." : " oppgaver.");
+    }
+
+    /* Kravene i steg 3 */
+    var q = tell("krav");
+    var stolpe2 = document.getElementById("stolpe2");
+    if (stolpe2) {
+      stolpe2.style.width = (q.total ? (q.antall / q.total) * 100 : 0) + "%";
+      document.getElementById("tall2").textContent = q.antall + " av " + q.total;
+      document.getElementById("framdrift2").classList.toggle("klar", q.antall === q.total);
+      faneDel2.classList.toggle("ferdig", q.antall === q.total);
+    }
+  }
+
+  document.getElementById("nullstill").addEventListener("click", function () {
+    if (!window.confirm("Nullstille alle avkryssinger og starte forfra?")) return;
+    try { localStorage.removeItem(NOKKEL); } catch (e) {}
+    window.location.reload();
+  });
+
+  /* =================================================================
+     Nødsignal fra Nordlys
+     ================================================================= */
+
+  var H = document.getElementById("historie");
+  var V = document.getElementById("valg");
+  var mOks = document.getElementById("mOksygen");
+  var mSekk = document.getElementById("mSekk");
+  var mSted = document.getElementById("sted");
+  var hoppOver = document.getElementById("hoppOver");
+
+  var OKS_MAKS = 24;
+  var s;
+
+  function terning(minste, storste) {
+    return Math.floor(Math.random() * (storste - minste + 1)) + minste;
+  }
+
+  function har(ting) { return s.sekk.indexOf(ting) !== -1; }
+
+  function ta(ting) { if (!har(ting)) s.sekk.push(ting); }
+
+  function fjern(ting) {
+    var i = s.sekk.indexOf(ting);
+    if (i > -1) s.sekk.splice(i, 1);
+  }
+
+  function maalere() {
+    mOks.textContent = s.oks;
+    mSekk.textContent = s.sekk.length ? s.sekk.join(", ") : "empty";
+  }
+
+  function skriv(sted, tekst) {
+    mSted.textContent = sted;
+    H.textContent = tekst;
+    V.innerHTML = "";
+    maalere();
+  }
+
+  function valg(tekst, handling) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.textContent = tekst;
+    b.addEventListener("click", function () {
+      s.klikk++;
+      if (s.klikk >= 24 && !lagret.spilt) hoppOver.classList.remove("skjult");
+      handling();
+    });
+    V.appendChild(b);
+  }
+
+  function flytt(scene) {
+    return function () {
+      s.oks -= 1;
+      if (s.oks <= 0) { s.oks = 0; kvalt(); return; }
+      scene();
+    };
+  }
+
+  function nytt() {
+    s = {
+      oks: OKS_MAKS, sekk: [], droneLiv: 5, droneAv: false,
+      signal: false, kapsel: false, luke: false, patron: false, klikk: 0
+    };
+    dokk();
+  }
+
+  /* ---- Docking bay ---- */
+
+  function dokk() {
+    skriv("docking bay",
+      "The yellow emergency light blinks on and off. Your cargo ship lies against the wall " +
+      "like a snapped match, and the speakers say nothing.\n\n" +
+      "For four days Nordlys has not answered. Now you know why nobody called back.\n\n" +
+      "To starboard is the escape pod, behind a red lock panel. Straight ahead, a hatch leads " +
+      "into the main corridor."
+    );
+    valg("Search the wreck of your cargo ship", vrak);
+    valg("Look at the lock panel by the escape pod", kapsel);
+    valg("Go into the main corridor", flytt(korridor));
+  }
+
+  function vrak() {
+    if (!har("multi-tool")) {
+      ta("multi-tool");
+      skriv("docking bay",
+        "You crawl into what is left of the cockpit.\n\n" +
+        "Your tool belt is still clipped in place. You work a MULTI-TOOL loose and put it in your pocket.");
+    } else {
+      skriv("docking bay", "There is nothing else to find in the wreck.");
+    }
+    valg("Back", dokk);
+  }
+
+  function kapsel() {
+    if (!s.kapsel) {
+      skriv("docking bay",
+        "The panel glows red.\n\nPOD LOCKED. RELEASE IS CONTROLLED FROM THE BRIDGE.\n\n" +
+        "You pull the handle anyway. Nothing moves.");
+      valg("Back", dokk);
+      return;
+    }
+    skriv("docking bay",
+      "The panel glows green. The hatch stands open, and the seat inside is covered in dust.\n\n" +
+      "Strap in and launch, and Nordlys is behind you for good.");
+    valg("Strap in and launch", s.signal ? sluttSignal : sluttAlene);
+    valg("Wait a moment", dokk);
+  }
+
+  /* ---- The corridor ---- */
+
+  function korridor() {
+    skriv("main corridor",
+      "The corridor runs off into the dark. A filter coughs somewhere above you.\n\n" +
+      "Doors line both sides, each one with a handwritten sign." +
+      (s.luke ? "\n\nIn the ceiling, the hatch to the antenna shaft stands open." : ""));
+    valg("Crew quarters", flytt(lugar));
+    valg("Laboratory", flytt(lab));
+    valg("Engine room", flytt(maskin));
+    valg("The bridge", flytt(broa));
+    if (s.luke) valg("Climb up into the antenna shaft", flytt(antenne));
+    valg("Back to the docking bay", flytt(dokk));
+  }
+
+  /* ---- Crew quarters ---- */
+
+  function lugar() {
+    if (!har("key card")) {
+      ta("key card");
+      skriv("crew quarters",
+        "Six bunks. Five of them are made. A jacket hangs over the chair by the sixth.\n\n" +
+        "There is a KEY CARD in the chest pocket.\n\n" +
+        "A logbook lies open on the table:\n\n" +
+        "\"The repair drone can no longer tell scrap from crew. We have shut it in the engine " +
+        "room. The battery for the distress beacon was left in there.\"");
+    } else {
+      skriv("crew quarters", "The bunks are as they were. You have taken what there was to take.");
+    }
+    valg("Back to the corridor", flytt(korridor));
+  }
+
+  /* ---- Laboratory ---- */
+
+  function lab() {
+    skriv("laboratory",
+      "Test tubes in racks, every single one labelled with a date. The last one is four days old.\n\n" +
+      "A medical cabinet hangs on the wall, with a card reader beside it.");
+    valg("Try the medical cabinet", skap);
+    valg("Back to the corridor", flytt(korridor));
+  }
+
+  function skap() {
+    if (!har("key card")) {
+      skriv("laboratory", "The reader blinks.\n\nCARD REQUIRED.\n\nYou have no card to swipe.");
+    } else if (!s.patron) {
+      s.patron = true;
+      s.oks = Math.min(OKS_MAKS, s.oks + 6);
+      skriv("laboratory",
+        "The card works. The cabinet springs open.\n\n" +
+        "Inside is a full oxygen canister. You connect it to your suit, and breathing comes easier.");
+    } else {
+      skriv("laboratory", "The cabinet stands open and empty.");
+    }
+    valg("Back", lab);
+  }
+
+  /* ---- Engine room ---- */
+
+  function maskin() {
+    if (!s.droneAv) {
+      skriv("engine room",
+        "The engine room hammers. In the middle of it hovers the repair drone, a ball of arms " +
+        "and lenses.\n\n" +
+        "It turns towards you. The arms fold out.\n\n" +
+        "Behind it, in a bracket on the wall, lies a heavy BATTERY.");
+      valg("Attack the drone", kamp);
+      if (har("multi-tool")) valg("Switch the drone off with your multi-tool", deaktiver);
+      valg("Back out into the corridor", flytt(korridor));
+      return;
+    }
+    if (!har("battery")) {
+      ta("battery");
+      skriv("engine room",
+        "The drone lies still on the floor.\n\n" +
+        "You lift the BATTERY out of its bracket. It is heavier than it looks.");
+    } else {
+      skriv("engine room", "Only the machines are making any noise now.");
+    }
+    valg("Back to the corridor", flytt(korridor));
+  }
+
+  function deaktiver() {
+    s.droneAv = true;
+    skriv("engine room",
+      "You step in underneath the drone, where the lenses cannot reach, and find the service " +
+      "panel on its underside.\n\n" +
+      "Two screws. The arms stop mid-swing, and the drone sinks to the floor.");
+    valg("Look around the engine room", maskin);
+  }
+
+  function kamp() {
+    var skade = terning(1, 3);
+    s.droneLiv -= skade;
+
+    if (s.droneLiv <= 0) {
+      s.droneAv = true;
+      skriv("engine room",
+        "You hit the drone for " + skade + ". Something breaks inside it.\n\n" +
+        "It tips over, scrapes along the floor, and lies still.");
+      valg("Look around the engine room", maskin);
+      return;
+    }
+
+    var mot = terning(1, 3);
+    s.oks -= mot;
+    if (s.oks <= 0) { s.oks = 0; kvalt(); return; }
+
+    skriv("engine room",
+      "You hit the drone for " + skade + ".\n\n" +
+      "An arm slams into your suit. The hose tears, and you lose " + mot + " oxygen.");
+    valg("Hit it again", kamp);
+    valg("Back out into the corridor", flytt(korridor));
+  }
+
+  /* ---- The bridge ---- */
+
+  function broa() {
+    if (!har("key card")) {
+      skriv("the bridge",
+        "The bridge is dark. Every screen is asleep.\n\n" +
+        "The terminal in the middle blinks steadily: CARD REQUIRED.");
+      valg("Back to the corridor", flytt(korridor));
+      return;
+    }
+    if (!s.kapsel) {
+      skriv("the bridge", "You stand at the main terminal with the key card in your hand.");
+      valg("Swipe the card and bring the systems up", terminal);
+      valg("Back to the corridor", flytt(korridor));
+      return;
+    }
+    skriv("the bridge",
+      "The screens are lit. The pod lock is off, and the ceiling hatch to the antenna shaft is open.");
+    valg("Back to the corridor", flytt(korridor));
+  }
+
+  function terminal() {
+    s.kapsel = true;
+    s.luke = true;
+    skriv("the bridge",
+      "The screens wake up, one after another.\n\n" +
+      "POD LOCK: RELEASED\nCEILING HATCH, ANTENNA SHAFT: OPEN\nDISTRESS BEACON: NO POWER\n\n" +
+      "The last line in the log was written four days ago:\n\n" +
+      "\"Nobody comes looking for us if the beacon is dead.\"");
+    valg("Back", broa);
+  }
+
+  /* ---- The antenna ---- */
+
+  function antenne() {
+    if (s.signal) {
+      skriv("antenna room",
+        "The beacon pulses steadily. The signal goes out into the dark, over and over.");
+      valg("Down to the corridor", flytt(korridor));
+      return;
+    }
+    if (!har("battery")) {
+      skriv("antenna room",
+        "The shaft ends in a small room under the antenna. Outside the window the stars stand " +
+        "perfectly still.\n\n" +
+        "The distress beacon is dead. The battery well is empty.");
+      valg("Down to the corridor", flytt(korridor));
+      return;
+    }
+    skriv("antenna room",
+      "The distress beacon waits under the window. The battery in your pocket fits the well.");
+    valg("Fit the battery and send the distress signal", sendSignal);
+    valg("Down to the corridor", flytt(korridor));
+  }
+
+  function sendSignal() {
+    s.signal = true;
+    fjern("battery");
+    skriv("antenna room",
+      "The battery clicks into place. The beacon draws breath, and then it goes out:\n\n" +
+      "NORDLYS CALLING. ONE ON BOARD. SEND HELP.\n\n" +
+      "It will be hours before anyone hears it. You do not have hours. But the pod has a radio.");
+    valg("Down to the corridor", flytt(korridor));
+  }
+
+  /* ---- Endings ---- */
+
+  function sluttAlene() {
+    skriv("escape pod",
+      "You strap in. The pod breaks loose with a bang, and Nordlys grows smaller and smaller " +
+      "behind you.\n\n" +
+      "Nobody knows you are out here. Nobody is looking. You drift, and you wait.\n\n" +
+      "ENDING 1 OF 2. You got away alone.");
+    sluttValg();
+  }
+
+  function sluttSignal() {
+    skriv("escape pod",
+      "You strap in. The pod breaks loose, and behind you the antenna goes on calling into the dark.\n\n" +
+      "Fourteen hours later a rescue ship pulls up alongside your pod. They heard you.\n\n" +
+      "ENDING 2 OF 2. You got away, and someone knew where to look.");
+    sluttValg();
+  }
+
+  function sluttValg() {
+    laasOpp1();
+    valg("Play again", nytt);
+    valg("Continue to step 2", function () { visFane("del1"); });
+  }
+
+  function kvalt() {
+    skriv("nordlys",
+      "The gauge reads zero.\n\n" +
+      "The sound of your own breathing goes away, and the corridor turns long and bright.\n\n" +
+      "ENDING. The oxygen ran out before you did.");
+    valg("Try again", nytt);
+  }
+
+  function laasOpp1() {
+    if (lagret.spilt) return;
+    lagret.spilt = true;
+    lagre();
+    oppdater(true);
+  }
+
+  document.getElementById("nyttSpill").addEventListener("click", nytt);
+  hoppOver.addEventListener("click", laasOpp1);
+
+  /* =================================================================
+     Start
+     ================================================================= */
+
+  koble("kjerne", "kjerne");
+  koble("ekstra", "ekstra");
+  koble("krav", "krav");
+  oppdater(false);
+  visFane(lagret.fane);
+  nytt();
+})();
+</script>
+
+</body>
+</html>
