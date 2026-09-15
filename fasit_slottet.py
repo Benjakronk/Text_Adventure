@@ -15,6 +15,7 @@ import random
 liv = 10
 inventar = []
 spiller = True
+sted = "ute"        # hvor spilleren er akkurat nå
 
 # ---------- DICTIONARY ----------
 # Alt vi trenger å vite om en fiende ligger samlet på ett sted.
@@ -23,6 +24,10 @@ fiender = {
     "troll": {"liv": 8, "min_skade": 2, "maks_skade": 4},
     "rotte": {"liv": 2, "min_skade": 1, "maks_skade": 2},        # OPPGAVE 6
 }
+
+# Trollets liv lages her oppe, utenfor løkken.
+# Da husker spillet det, og et beseiret troll forblir dødt.
+troll_liv = fiender["troll"]["liv"]
 
 # ---------- FUNKSJONER ----------
 
@@ -61,42 +66,63 @@ while spiller:
     vis_status()
     print()
 
-    valg = spor("Går du inn i SLOTTET eller inn i SKOGEN? ")
+    # Hver runde sjekker vi hvor spilleren står, og viser bare det stedet.
+    # Spilleren flytter seg ved at vi gir sted en ny verdi.
 
-    if valg == "slottet":
+    if sted == "ute":
 
-        print()
+        valg = spor("Går du inn i SLOTTET eller inn i SKOGEN? ")
+
+        if valg == "slottet":
+            sted = "hallen"
+        elif valg == "skogen":
+            sted = "skogen"
+        else:
+            print("Du må velge SLOTTET eller SKOGEN.")
+
+    elif sted == "hallen":
+
         print("Inngangshallen er kald og mørk.")
         print("Du ser en gammel tredør, og en trapp som går opp i mørket.")
 
-        valg = spor("Velger du DØREN eller TRAPPEN? ")
+        valg = spor("Velger du DØREN, TRAPPEN, eller går du UT? ")
 
         if valg == "døren":
-
-            print()
-            print("Bak døren står en stor kiste med jernbeslag.")
-
-            # OPPGAVE 2
-            svar = spor("Vil du ÅPNE kisten? ")
-
-            if svar == "åpne":
-                if "gullnøkkel" in inventar:
-                    print("Kisten er allerede tom. Du har tatt det som lå her.")
-                else:
-                    inventar.append("gullnøkkel")
-                    print("Lokket knirker opp.")
-                    print("Inni ligger en liten GULLNØKKEL. Du legger den i sekken.")
-            else:
-                print("Du lar kisten stå urørt.")
-
+            sted = "rommet"
         elif valg == "trappen":
+            sted = "trappen"
+        elif valg == "ut":
+            sted = "ute"
+        else:
+            print("Du blir stående. Ingenting skjer.")
 
-            print()
+    elif sted == "rommet":
+
+        print("Du står i et lite rom. En stor kiste med jernbeslag står mot veggen.")
+
+        valg = spor("Vil du ÅPNE kisten, eller gå TILBAKE til hallen? ")
+
+        if valg == "åpne":
+            # OPPGAVE 2
+            if "gullnøkkel" in inventar:
+                print("Kisten er allerede tom. Du har tatt det som lå her.")
+            else:
+                inventar.append("gullnøkkel")
+                print("Lokket knirker opp.")
+                print("Inni ligger en liten GULLNØKKEL. Du legger den i sekken.")
+        elif valg == "tilbake":
+            sted = "hallen"
+        else:
+            print("Du blir stående. Ingenting skjer.")
+
+    elif sted == "trappen":
+
+        if troll_liv > 0:
+
             print("Halvveis opp reiser et stort troll seg foran deg.")
             print("INGEN PASSERER, brøler det.")
 
             troll = fiender["troll"]
-            troll_liv = troll["liv"]
 
             # OPPGAVE 3
             while troll_liv > 0 and liv > 0:
@@ -122,47 +148,53 @@ while spiller:
                 else:
                     print("Trollet venter. Du må velge.")
 
-            if troll_liv <= 0:
-
-                print()
-                print("Trollet faller. Bak det står en tung, låst dør.")
-
-                # OPPGAVE 4
-                if "gullnøkkel" in inventar:
-                    print("Nøkkelen passer. Låsen klikker.")
-                    print("Bak døren ligger slottets gamle skattkammer.")
-                    print("Du har funnet skatten. DU VANT!")
-                    spiller = False
-                else:
-                    print("Døren er låst. Et sted i slottet finnes en nøkkel.")
-
         else:
-            print("Du blir stående. Ingenting skjer.")
+            print("Trollet ligger fortsatt på trappen der du slo det ned.")
 
-    elif valg == "skogen":
+        if troll_liv <= 0:
 
-        print()
+            print()
+            print("Trollet er beseiret. Bak det står en tung, låst dør.")
+
+            # OPPGAVE 4
+            if "gullnøkkel" in inventar:
+                print("Nøkkelen passer. Låsen klikker.")
+                print("Bak døren ligger slottets gamle skattkammer.")
+                print("Du har funnet skatten. DU VANT!")
+                spiller = False
+            else:
+                print("Døren er låst. Et sted i slottet finnes en nøkkel.")
+
+        # Vant du ikke, går du ned til hallen igjen.
+        sted = "hallen"
+
+    elif sted == "skogen":
+
         print("Trærne står tett. Noe rasler i buskene.")
 
-        # OPPGAVE 5 og 6
-        hendelse = terning(1, 2)
+        valg = spor("Vil du LETE i buskene, eller gå TILBAKE til slottet? ")
 
-        if hendelse == 1:
-            if "helsedrikk" in inventar:
-                print("Du leter i gresset, men finner ingenting denne gangen.")
+        if valg == "lete":
+            # OPPGAVE 5 og 6
+            hendelse = terning(1, 2)
+
+            if hendelse == 1:
+                if "helsedrikk" in inventar:
+                    print("Du leter i gresset, men finner ingenting denne gangen.")
+                else:
+                    inventar.append("helsedrikk")
+                    print("Du finner en liten flaske i gresset.")
+                    print("Det er en HELSEDRIKK. Du legger den i sekken.")
             else:
-                inventar.append("helsedrikk")
-                print("Du finner en liten flaske i gresset.")
-                print("Det er en HELSEDRIKK. Du legger den i sekken.")
+                rotte = fiender["rotte"]
+                skade = terning(rotte["min_skade"], rotte["maks_skade"])
+                liv = liv - skade
+                print("En diger rotte kaster seg mot leggen din.")
+                print("Du rister den av deg, men mister", skade, "liv.")
+        elif valg == "tilbake":
+            sted = "ute"
         else:
-            rotte = fiender["rotte"]
-            skade = terning(rotte["min_skade"], rotte["maks_skade"])
-            liv = liv - skade
-            print("En diger rotte kaster seg mot leggen din.")
-            print("Du rister den av deg, men mister", skade, "liv.")
-
-    else:
-        print("Du må velge SLOTTET eller SKOGEN.")
+            print("Du blir stående. Ingenting skjer.")
 
     # OPPGAVE 7
     if liv <= 0:

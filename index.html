@@ -410,12 +410,13 @@ footer a{color:var(--messing)}
           <div class="krysse"><input type="checkbox" class="kjerne" id="k2" aria-labelledby="k2t"></div>
           <div class="innhold">
             <h3 id="k2t"><span class="num">2.</span> Kisten og gullnøkkelen <span class="merke">liste</span></h3>
-            <p>Spør spilleren om hen vil åpne kisten. Åpner hen den, skal
-            <code>"gullnøkkel"</code> legges i <code>inventar</code>, og spilleren skal få vite
-            hva hen fant. Ellers går hen videre uten nøkkelen.</p>
+            <p>Når spilleren velger <code>ÅPNE</code>, skal <code>"gullnøkkel"</code> legges i
+            <code>inventar</code>, og spilleren skal få vite hva den fant. Åpner spilleren kisten en gang
+            til, er den tom.</p>
             <details>
               <summary>Vis hint</summary>
-              <p>Bruk <code>spor()</code> til å spørre, akkurat som lenger oppe i koden.</p>
+              <p>Uten sjekken kan spilleren åpne kisten om og om igjen, og få en ny nøkkel hver gang.
+              Husk at <code>pass</code> må bort.</p>
               <div class="kodeboks">
                 <button class="kopier" type="button" data-for="src-h2">Kopier</button>
                 <pre data-src="src-h2"></pre>
@@ -442,6 +443,8 @@ footer a{color:var(--messing)}
               <p>Betingelsen må sjekke to ting samtidig. Bruk <code>and</code>.
               Skaden trollet gjør henter du fra dictionaryen: <code>troll["min_skade"]</code> og
               <code>troll["maks_skade"]</code>.</p>
+              <p><code>troll_liv</code> er laget øverst i filen, utenfor hovedløkken. Derfor husker
+              spillet hvor mye liv trollet har, og et beseiret troll står ikke opp igjen.</p>
               <div class="kodeboks">
                 <button class="kopier" type="button" data-for="src-h3">Kopier</button>
                 <pre data-src="src-h3"></pre>
@@ -477,7 +480,7 @@ footer a{color:var(--messing)}
           <div class="krysse"><input type="checkbox" class="kjerne" id="k5" aria-labelledby="k5t"></div>
           <div class="innhold">
             <h3 id="k5t"><span class="num">5.</span> To hendelser i skogen <span class="merke">random</span></h3>
-            <p>La <code>terning(1, 2)</code> avgjøre hva som skjer i buskene. Den ene gangen finner
+            <p>Når spilleren velger <code>LETE</code>, skal <code>terning(1, 2)</code> avgjøre hva som skjer i buskene. Den ene gangen finner
             spilleren en helsedrikk som legges i sekken. Den andre gangen skjer det noe som koster liv.</p>
             <details>
               <summary>Vis hint</summary>
@@ -529,7 +532,7 @@ footer a{color:var(--messing)}
                 <button class="kopier" type="button" data-for="src-h7">Kopier</button>
                 <pre data-src="src-h7"></pre>
               </div>
-              <p>Legg merke til at koden må stå med samme innrykk som <code>valg = spor(...)</code>,
+              <p>Legg merke til at koden må stå med samme innrykk som <code>if sted == "ute":</code>,
               altså inni <code>while</code>-løkken, men utenfor alle <code>if</code>-ene.</p>
             </details>
           </div>
@@ -548,6 +551,7 @@ footer a{color:var(--messing)}
               <li>Du skriver <code>Slottet</code> med stor S, og det virker likevel.</li>
               <li>Du skriver noe helt annet, som <code>pizza</code>, og programmet krasjer ikke.</li>
               <li>Du kan flykte fra trollet og gjøre noe annet etterpå.</li>
+              <li>Etter at du har åpnet kisten, står du fortsatt i rommet og kan gå tilbake til hallen.</li>
             </ul>
           </div>
         </div>
@@ -739,7 +743,7 @@ footer a{color:var(--messing)}
       <li>å ta samme valg to ganger på rad</li>
     </ul>
     <p class="notat">Til slutt: la en medelev spille uten at du forklarer noe.
-    Ikke si et ord. Der hen blir sittende og lure, har du funnet det du skal fikse.</p>
+    Ikke si et ord. Der spilleren blir sittende og lure, har du funnet det du skal fikse.</p>
   </div>
 </section>
 
@@ -926,6 +930,7 @@ import random
 liv = 10
 inventar = []
 spiller = True
+sted = "ute"        # hvor spilleren er akkurat nå
 
 # ---------- DICTIONARY ----------
 # Alt vi trenger å vite om en fiende ligger samlet på ett sted.
@@ -934,6 +939,10 @@ fiender = {
     "troll": {"liv": 8, "min_skade": 2, "maks_skade": 4},
     # OPPGAVE 6: legg til én fiende til her
 }
+
+# Trollets liv lages her oppe, utenfor løkken.
+# Da husker spillet det, og et beseiret troll forblir dødt.
+troll_liv = fiender["troll"]["liv"]
 
 # ---------- FUNKSJONER ----------
 
@@ -965,61 +974,94 @@ while spiller:
     vis_status()
     print()
 
-    valg = spor("Går du inn i SLOTTET eller inn i SKOGEN? ")
+    # Hver runde sjekker vi hvor spilleren står, og viser bare det stedet.
+    # Spilleren flytter seg ved at vi gir sted en ny verdi.
 
-    if valg == "slottet":
+    if sted == "ute":
 
-        print()
+        valg = spor("Går du inn i SLOTTET eller inn i SKOGEN? ")
+
+        if valg == "slottet":
+            sted = "hallen"
+        elif valg == "skogen":
+            sted = "skogen"
+        else:
+            print("Du må velge SLOTTET eller SKOGEN.")
+
+    elif sted == "hallen":
+
         print("Inngangshallen er kald og mørk.")
         print("Du ser en gammel tredør, og en trapp som går opp i mørket.")
 
-        valg = spor("Velger du DØREN eller TRAPPEN? ")
+        valg = spor("Velger du DØREN, TRAPPEN, eller går du UT? ")
 
         if valg == "døren":
-
-            print()
-            print("Bak døren står en stor kiste med jernbeslag.")
-
-            # OPPGAVE 2: spør om spilleren vil åpne kisten.
-            # Åpner hen den: legg "gullnøkkel" i inventar, og fortell hva hen fant.
-            # Ellers: skriv at spilleren lar kisten stå.
-
+            sted = "rommet"
         elif valg == "trappen":
+            sted = "trappen"
+        elif valg == "ut":
+            sted = "ute"
+        else:
+            print("Du blir stående. Ingenting skjer.")
 
-            print()
+    elif sted == "rommet":
+
+        print("Du står i et lite rom. En stor kiste med jernbeslag står mot veggen.")
+
+        valg = spor("Vil du ÅPNE kisten, eller gå TILBAKE til hallen? ")
+
+        if valg == "åpne":
+            # OPPGAVE 2: legg "gullnøkkel" i inventar, og fortell hva spilleren fant.
+            # Ligger nøkkelen allerede i sekken, er kisten tom.
+            pass
+        elif valg == "tilbake":
+            sted = "hallen"
+        else:
+            print("Du blir stående. Ingenting skjer.")
+
+    elif sted == "trappen":
+
+        if troll_liv > 0:
+
             print("Halvveis opp reiser et stort troll seg foran deg.")
             print("INGEN PASSERER, brøler det.")
 
             troll = fiender["troll"]
-            troll_liv = troll["liv"]
 
             # OPPGAVE 3: lag kampen her.
             # En while-løkke som går så lenge både trollet og spilleren lever.
             # Hver runde kan spilleren velge ANGRIP eller FLYKT.
 
-            if troll_liv <= 0:
-
-                print()
-                print("Trollet faller. Bak det står en tung, låst dør.")
-
-                # OPPGAVE 4: har spilleren "gullnøkkel" i inventar?
-                # Ja: åpne døren, skriv seiersmeldingen, sett spiller = False.
-                # Nei: fortell at døren er låst.
-
         else:
-            print("Du blir stående. Ingenting skjer.")
+            print("Trollet ligger fortsatt på trappen der du slo det ned.")
 
-    elif valg == "skogen":
+        if troll_liv <= 0:
 
-        print()
+            print()
+            print("Trollet er beseiret. Bak det står en tung, låst dør.")
+
+            # OPPGAVE 4: har spilleren "gullnøkkel" i inventar?
+            # Ja: åpne døren, skriv seiersmeldingen, sett spiller = False.
+            # Nei: fortell at døren er låst.
+
+        # Vant du ikke, går du ned til hallen igjen.
+        sted = "hallen"
+
+    elif sted == "skogen":
+
         print("Trærne står tett. Noe rasler i buskene.")
 
-        # OPPGAVE 5: lag to hendelser, og la terning(1, 2) avgjøre hvilken.
-        # Den ene gir spilleren en helsedrikk.
-        # Den andre koster liv.
+        valg = spor("Vil du LETE i buskene, eller gå TILBAKE til slottet? ")
 
-    else:
-        print("Du må velge SLOTTET eller SKOGEN.")
+        if valg == "lete":
+            # OPPGAVE 5: lag to hendelser, og la terning(1, 2) avgjøre hvilken.
+            # Den ene gir spilleren en helsedrikk.
+            # Den andre koster liv.
+            pass
+        elif valg == "tilbake":
+            sted = "ute"
+        else:
+            print("Du blir stående. Ingenting skjer.")
 
     # OPPGAVE 7: er liv 0 eller mindre?
     # Skriv GAME OVER, og stopp spillet.
@@ -1038,13 +1080,11 @@ def vis_status():
 </script>
 
 <script type="text/plain" id="src-h2">
-svar = spor("Vil du ÅPNE kisten? ")
-
-if svar == "åpne":
+if "gullnøkkel" in inventar:
+    print(...)      # kisten er tom, nøkkelen har du allerede
+else:
     inventar.append("gullnøkkel")
     print(...)      # fortell hva spilleren fant
-else:
-    print(...)      # spilleren lar kisten stå
 </script>
 
 <script type="text/plain" id="src-h3">
