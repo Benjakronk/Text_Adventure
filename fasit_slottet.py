@@ -2,8 +2,8 @@
 FASIT - Det glemte slottet
 
 En mulig løsning på de sju kodeoppgavene i steg 2. Ikke den eneste riktige.
-De frivillige ekstrautfordringene (helsedrikk i kamp, poeng, nye steder,
-flere avslutninger) er med vilje ikke tatt med her.
+Ekstrautfordring A (DRIKK når som helst) er med, inne i spor(). De andre
+ekstrautfordringene (poeng, nye steder, flere avslutninger) er ikke tatt med.
 
 Til lærer: elevfilen heter slottet.py og ligger i samme mappe.
 """
@@ -50,7 +50,22 @@ def terning(minste, storste):
 
 def spor(sporsmal):
     """Stiller et spørsmål og gjør svaret om til små bokstaver."""
-    return input(sporsmal).lower().strip()
+    global liv          # EKSTRA A: funksjonen må få lov til å endre liv, ikke bare lese den
+
+    svar = input(sporsmal).lower().strip()
+
+    # Så lenge spilleren skriver DRIKK, drikker vi og stiller spørsmålet på nytt.
+    # Alle spørsmål i spillet går gjennom spor(), så DRIKK virker overalt.
+    while svar == "drikk":
+        if "helsedrikk" in inventar:
+            inventar.remove("helsedrikk")
+            liv = liv + 5
+            print("Du drikker helsedrikken. Liv:", liv)
+        else:
+            print("Du har ingen helsedrikk i sekken.")
+        svar = input(sporsmal).lower().strip()
+
+    return svar
 
 
 # ---------- SPILLET ----------

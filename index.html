@@ -617,8 +617,20 @@ footer a{color:var(--messing)}
           <div class="krysse"><input type="checkbox" class="ekstra" id="e1" aria-labelledby="e1t"></div>
           <div class="innhold">
             <h3 id="e1t"><span class="num">A.</span> Drikk helsedrikken</h3>
-            <p>Har du <code>"helsedrikk"</code> i sekken, skal du kunne drikke den midt i kampen.
-            Den gir liv, og forsvinner etterpå med <code>inventar.remove("helsedrikk")</code>.</p>
+            <p>Har du <code>"helsedrikk"</code> i sekken, skal du kunne skrive <code>DRIKK</code> når som helst,
+            uansett hvor du står. Også midt i kampen. Den gir liv, og forsvinner etterpå med
+            <code>inventar.remove("helsedrikk")</code>. Har du ingen, skal spillet si det.</p>
+            <details>
+              <summary>Vis hint</summary>
+              <p>Alle spørsmål i spillet går gjennom <code>spor()</code>. Legger du sjekken der,
+              virker <code>DRIKK</code> overalt uten at du må skrive den på nytt i hvert rom.
+              Én ting til: en funksjon kan <em>lese</em> <code>liv</code>, men for å <em>endre</em>
+              den må du si <code>global liv</code> øverst i funksjonen.</p>
+              <div class="kodeboks">
+                <button class="kopier" type="button" data-for="src-e1">Kopier</button>
+                <pre data-src="src-e1"></pre>
+              </div>
+            </details>
           </div>
         </div>
       </li>
@@ -1379,6 +1391,25 @@ if hendelse == 1:
 else:
     # noe kommer ut av buskene, og du mister liv
     pass
+</script>
+
+<script type="text/plain" id="src-e1">
+def spor(sporsmal):
+    global liv          # nå kan funksjonen endre liv, ikke bare lese den
+
+    svar = input(sporsmal).lower().strip()
+
+    # Så lenge spilleren skriver DRIKK, drikker vi og stiller spørsmålet på nytt.
+    while svar == "drikk":
+        if "helsedrikk" in inventar:
+            inventar.remove("helsedrikk")
+            liv = liv + 5
+            print("Du drikker helsedrikken. Liv:", liv)
+        else:
+            print("Du har ingen helsedrikk i sekken.")
+        svar = input(sporsmal).lower().strip()
+
+    return svar
 </script>
 
 <script type="text/plain" id="src-h6">
